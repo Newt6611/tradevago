@@ -1,7 +1,7 @@
 package cycles
 
 import (
-	"github.com/Newt6611/tradevago/tri"
+	"github.com/Newt6611/tradevago/pkg/api"
 	_ "github.com/Newt6611/tradevago/tri"
 )
 
@@ -31,11 +31,11 @@ func (this BtcUsdt) GetSymbols() []string {
     }
 }
 
-func (this BtcUsdt) GetSides() []tri.Side {
-    return []tri.Side {
-        tri.BUY,
-        tri.SELL,
-        tri.SELL,
+func (this BtcUsdt) GetSides() []api.Side {
+    return []api.Side {
+        api.BUY,
+        api.SELL,
+        api.SELL,
     }
 }
 
@@ -66,10 +66,10 @@ func (this UsdtBtc) GetSymbols() []string {
     }
 }
 
-func (this UsdtBtc) GetSides() []tri.Side {
-    return []tri.Side {
-        tri.BUY,
-        tri.BUY,
-        tri.SELL,
+func (this UsdtBtc) GetSides() []api.Side {
+    return []api.Side {
+        api.BUY,
+        api.BUY,
+        api.SELL,
     }
 }

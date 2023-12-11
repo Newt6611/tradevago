@@ -25,23 +25,23 @@ func CycleHandler(apiClient *api.Api, depthHandler *DepthHandler, cycle Cycle) (
     return baseAmount, orderAmount
 }
 
-func resolveAmount(apiClient *api.Api, baseAmount float64, depth api.WsDepth, side Side) float64 {
-    if side == BUY{
+func resolveAmount(apiClient *api.Api, baseAmount float64, depth api.WsDepth, side api.Side) float64 {
+    if side == api.BUY {
         baseAmount /= depth.Asks[0].Price
-    } else if side == SELL {
+    } else if side == api.SELL {
         baseAmount *= depth.Bids[0].Price
     }
     baseAmount -= baseAmount * apiClient.GetTakerFee()
     return baseAmount
 }
 
-func resolveOrderAmount(side Side, depth api.WsDepth, orderAmount float64) float64 {
-    if side == SELL {
+func resolveOrderAmount(side api.Side, depth api.WsDepth, orderAmount float64) float64 {
+    if side == api.SELL {
         if orderAmount > depth.Bids[0].Amount{
             orderAmount = depth.Bids[0].Amount
         }
         orderAmount *= depth.Bids[0].Price
-    } else if side == BUY {
+    } else if side == api.BUY {
         t := depth.Asks[0].Price * depth.Asks[0].Amount
         if orderAmount > t {
             orderAmount = t
