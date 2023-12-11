@@ -1,7 +1,14 @@
 package api
 
-import "context"
+type Side string
 
-func GetRequest(ctx context.Context, endpoint string, query ...string) {
-    
-}
+const (
+    SELL Side = "SELL"
+    BUY  Side = "BUY"
+)
+
+type OrderType string
+const (
+    LIMIT   OrderType = "LIMIT"
+    MARKET  OrderType = "MARKET"
+)
