@@ -27,6 +27,7 @@ func (this *NotifyHandler) Handle(ctx context.Context) {
         }
 
         this.notifier.SendCodeMsg(ctx, msg)
+        msg = premsg
     }
 }
 
