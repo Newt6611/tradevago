@@ -35,7 +35,7 @@ func main() {
     client := max.NewMaxClient(apiKey, apiSecret, takerFee, makerFee)
     apiClient := api.NewApi(client)
 
-    wsclient := max.NewMaxWs()
+    wsclient := max.NewMaxWs(apiKey, apiSecret)
     apiws := api.NewWsApi(wsclient)
 
     maxtri.StartMaxTri(apiClient, apiws, bot)

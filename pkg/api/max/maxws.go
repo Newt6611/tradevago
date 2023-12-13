@@ -1,8 +1,19 @@
 package max
 
-import "github.com/Newt6611/tradevago/pkg/api"
+import (
+	"github.com/Newt6611/tradevago/pkg/api"
+)
 
 const MAX_WS_ENDPOINT = "wss://max-stream.maicoin.com/ws"
+
+type authenticationRequest struct {
+	Action    string   `json:"action"`
+	APIKey    string   `json:"apiKey"`
+	Nonce     int64    `json:"nonce"`
+	Signature string   `json:"signature"`
+	ID        string   `json:"id"`
+	Filters   []string `json:"filters"`
+}
 
 type subscriptionRequest struct {
 	Action        string              `json:"action"`
@@ -17,11 +28,17 @@ type subscriptionEntry struct {
 }
 
 type MaxWs struct {
-    depthCache map[string]api.WsDepth
+    apiKey              string
+    apiSecret           string
+    depthCache          map[string]api.WsDepth
+    userOrderCache      map[string]api.WsUserOrder
 }
 
-func NewMaxWs() *MaxWs {
+func NewMaxWs(apiKey string, apiSecret string) *MaxWs {
     return &MaxWs {
+        apiKey: apiKey,
+        apiSecret: apiSecret,
         depthCache: map[string]api.WsDepth{},
+        userOrderCache: map[string]api.WsUserOrder{},
     }
 }

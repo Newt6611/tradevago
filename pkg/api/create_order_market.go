@@ -2,20 +2,30 @@ package api
 
 import "context"
 
+type OrderStatus string
+
+const (
+    OrderStatusWait     OrderStatus = "Wait"
+    OrderStatusDone     OrderStatus = "Done"
+    OrderStatusCancel   OrderStatus = "Cancel"
+
+    OrderStatusUnknow   OrderStatus = "Unknow"
+)
+
 type Order struct {
-    Id string
+    Id          string
+    OrderStatus OrderStatus
 }
 
 type CreateOrderService struct {
     client          Client
     side            Side
-    orderType       OrderType
     pair            string
     price           float64
     baseAmount      float64
 }
 
-func (c *Api) NewCreateOrderService() *CreateOrderService {
+func (c *Api) NewCreateOrderMarketService() *CreateOrderService {
     return &CreateOrderService {
         client: c.client,
     }
@@ -23,11 +33,6 @@ func (c *Api) NewCreateOrderService() *CreateOrderService {
 
 func (this *CreateOrderService) WithSide(side Side) *CreateOrderService {
     this.side = side
-    return this
-}
-
-func (this *CreateOrderService) WithOrderType(orderType OrderType) *CreateOrderService {
-    this.orderType = orderType
     return this
 }
 
@@ -47,5 +52,5 @@ func (this *CreateOrderService) WithBaseAmount(amount float64) *CreateOrderServi
 }
 
 func (this *CreateOrderService) Do(ctx context.Context) (Order, error){
-    return this.client.CreateOrder(ctx, this.side, this.orderType, this.pair, this.price, this.baseAmount)
+    return this.client.CreateOrderMarket(ctx, this.side, this.pair, this.price, this.baseAmount)
 }

@@ -22,7 +22,7 @@ type pairInfo struct {
 }
 
 func (m *Max) GetPairInfo(ctx context.Context) ([]api.PairInfo, error) {
-    res, err := internal.Get(ctx, MAX_API_ENDPOINT +  "/api/v2/markets", nil)
+    res, err := internal.Get(ctx, MAX_API_ENDPOINT +  "/api/v2/markets", nil, nil)
     if err != nil {
         return []api.PairInfo{}, err
     }

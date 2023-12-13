@@ -28,7 +28,7 @@ func (m *Max) GetDepth(ctx context.Context, depthService *api.DepthService) (api
     query.Add("limit", strconv.Itoa(depthService.Limit))
     query.Add("sort_by_price=", strconv.FormatBool(depthService.SortByPrice))
 
-    res, err := internal.Get(ctx, MAX_API_ENDPOINT + "api/v2/depth", query)
+    res, err := internal.Get(ctx, MAX_API_ENDPOINT + "api/v2/depth", query, nil)
     if err != nil {
         return api.Depth{}, err
     }

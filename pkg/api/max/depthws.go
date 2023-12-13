@@ -53,7 +53,7 @@ func (this *MaxWs) RunDepthConsumer(ctx context.Context, pairs []string, depth i
         var snapshot orderBookSnapshot
         err = json.Unmarshal(b, &snapshot)
         if err == nil && snapshot.Event == "snapshot" {
-            wsdepth := handleSnapShot(snapshot)
+            wsdepth := handleDepthSnapShot(snapshot)
             wsdepth.Pair = snapshot.Market
             this.depthCache[wsdepth.Pair] = wsdepth
             depthDataChan <- wsdepth
@@ -65,7 +65,7 @@ func (this *MaxWs) RunDepthConsumer(ctx context.Context, pairs []string, depth i
         if err == nil && update.Event == "update" {
             wsdepth := this.depthCache[update.Market]
             wsdepth.Err = nil
-            handleUpdate(update, &wsdepth)
+            handleDepthUpdate(update, &wsdepth)
             this.depthCache[wsdepth.Pair] = wsdepth
             depthDataChan <- wsdepth
             return
@@ -75,7 +75,7 @@ func (this *MaxWs) RunDepthConsumer(ctx context.Context, pairs []string, depth i
     return depthDataChan, close
 }
 
-func handleSnapShot(snapshot orderBookSnapshot) api.WsDepth {
+func handleDepthSnapShot(snapshot orderBookSnapshot) api.WsDepth {
     depth := api.WsDepth{}
     for i := range snapshot.Asks {
         askPrice, _ := strconv.ParseFloat(snapshot.Asks[i][0], 64)
@@ -97,7 +97,7 @@ func handleSnapShot(snapshot orderBookSnapshot) api.WsDepth {
     return depth
 }
 
-func handleUpdate(update orderBookUpdate, depth *api.WsDepth) {
+func handleDepthUpdate(update orderBookUpdate, depth *api.WsDepth) {
     if len(update.Asks) > 0 {
         var askPrice float64
         askAmount, _ := strconv.ParseFloat(update.Asks[0][1], 64)

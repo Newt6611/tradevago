@@ -1,12 +1,15 @@
 package max
 
-const MAX_API_ENDPOINT = "https://max-api.maicoin.com/"
+import m "github.com/maicoin/max-exchange-api-go"
+
+const MAX_API_ENDPOINT = "https://max-api.maicoin.com"
 
 type Max struct {
     apiKey      string
     apiSecret   string
     takerFee    float64
     makerFee    float64
+    maxapi      m.API
 }
 
 func NewMaxClient(apiKey string, apiSecret string, takerFee float64, makerFee float64) *Max {
@@ -15,6 +18,7 @@ func NewMaxClient(apiKey string, apiSecret string, takerFee float64, makerFee fl
         apiSecret: apiSecret,
         takerFee: takerFee,
         makerFee: makerFee,
+        maxapi: m.NewClient(m.AuthToken(apiKey, apiSecret)),
     }
 }
 

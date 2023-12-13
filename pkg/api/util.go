@@ -9,6 +9,6 @@ const (
 
 type OrderType string
 const (
-    LIMIT   OrderType = "LIMIT"
-    MARKET  OrderType = "MARKET"
+    OrderTypeLimit   OrderType = "LIMIT"
+    OrderTypeMarket  OrderType = "MARKET"
 )
