@@ -73,7 +73,14 @@ func (this *Max) CreateOrderMarket(ctx context.Context, side api.Side, pair stri
         return api.Order{}, err
     }
     res, err := internal.Post(ctx, MAX_API_ENDPOINT + path, reqb, headers)
+    // var errorRes apiErrorResponse
     if err != nil {
+        // // 調整 Amount 數量
+        // err = json.Unmarshal([]byte(err.Error()), &errorRes)
+        // if err == nil && !errorRes.Success && errorRes.Error.Code == 2018 {
+        //
+        // }
+
         return api.Order{}, err
     }
 

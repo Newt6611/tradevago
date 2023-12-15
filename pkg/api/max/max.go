@@ -4,6 +4,16 @@ import m "github.com/maicoin/max-exchange-api-go"
 
 const MAX_API_ENDPOINT = "https://max-api.maicoin.com"
 
+type apiErrorResponse struct {
+	Success bool                `json:"success"`
+	Error   apiErrorDetails     `json:"error"`
+}
+
+type apiErrorDetails struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
 type Max struct {
     apiKey      string
     apiSecret   string

@@ -102,16 +102,14 @@ second:
 		askPrice = this.depthHandler.GetDepth(symbols[1]).Asks[0].Price
 		// 須符合小數點
 		quoteAmount = roundToDecimalPlaces(amount, quotePrecision)
-		baseAmount = quoteAmount / askPrice
+		baseAmount = amount / askPrice
 		baseAmount = roundToDecimalPlaces(baseAmount, basePrecision)
-		fmt.Printf("2 quoteAmount: %v\n", quoteAmount)
-		fmt.Printf("2 baseAmount: %v\n", baseAmount)
 
 	} else if sides[1] == api.SELL {
 		bidPrice := this.depthHandler.GetDepth(symbols[1]).Bids[0].Price
 		// 須符合小數點
 		baseAmount = roundToDecimalPlaces(amount, basePrecision)
-		quoteAmount = roundToDecimalPlaces(baseAmount*bidPrice, quotePrecision)
+		quoteAmount = roundToDecimalPlaces(amount * bidPrice, quotePrecision)
 	}
 
 	order, err = this.apiClient.NewCreateOrderMarketService().
@@ -149,14 +147,14 @@ third:
 		askPrice = this.depthHandler.GetDepth(symbols[2]).Asks[0].Price
 		// 須符合小數點
 		quoteAmount = roundToDecimalPlaces(amount, quotePrecision)
-		baseAmount = quoteAmount / askPrice
+		baseAmount = amount / askPrice
 		baseAmount = roundToDecimalPlaces(baseAmount, basePrecision)
 
 	} else if sides[2] == api.SELL {
 		bidPrice := this.depthHandler.GetDepth(symbols[2]).Bids[0].Price
 		// 須符合小數點
 		baseAmount = roundToDecimalPlaces(amount, basePrecision)
-		quoteAmount = roundToDecimalPlaces(baseAmount*bidPrice, quotePrecision)
+		quoteAmount = roundToDecimalPlaces(amount * bidPrice, quotePrecision)
 	}
 
 	order, err = this.apiClient.NewCreateOrderMarketService().
