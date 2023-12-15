@@ -3,10 +3,12 @@ package max
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"strconv"
 
 	"github.com/Newt6611/tradevago/internal"
 	"github.com/Newt6611/tradevago/pkg/api"
+	"github.com/gorilla/websocket"
 )
 
 type orderBookSnapshot struct {
@@ -44,9 +46,15 @@ func (this *MaxWs) RunDepthConsumer(ctx context.Context, pairs []string, depth i
 
     depthDataChan := make(chan api.WsDepth, 1000)
 
-    close := internal.RunWsClient(ctx, MAX_WS_ENDPOINT, nil, subscriptions, func(t int, b []byte, err error) {
+    close := internal.RunWsClient(ctx, MAX_WS_ENDPOINT, nil, subscriptions, func(ws *websocket.Conn, t int, b []byte, err error) {
         if err != nil {
             depthDataChan <- api.WsDepth { Err: err }
+            return
+        }
+        var errEvent errorEvent
+        err = json.Unmarshal(b, &errEvent)
+        if err == nil && errEvent.Event == "error" {
+            depthDataChan <- api.WsDepth { Err: errors.New(errEvent.Errors[0]) }
             return
         }
 

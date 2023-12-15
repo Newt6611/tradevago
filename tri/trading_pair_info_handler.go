@@ -46,7 +46,7 @@ func (this *TradingPairInfoHandler) Handle(ctx context.Context, convertPairInfoN
 func (this *TradingPairInfoHandler) Get(name string) api.PairInfo {
     var info api.PairInfo
     this.mutex.Lock()
+    defer this.mutex.Unlock()
     info = this.pairInfos[name]
-    this.mutex.Unlock()
     return info
 }

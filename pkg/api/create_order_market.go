@@ -21,8 +21,8 @@ type CreateOrderService struct {
     client          Client
     side            Side
     pair            string
-    price           float64
     baseAmount      float64
+    quoteAmount     float64
 }
 
 func (c *Api) NewCreateOrderMarketService() *CreateOrderService {
@@ -41,8 +41,8 @@ func (this *CreateOrderService) WithPair(pair string) *CreateOrderService {
     return this
 }
 
-func (this *CreateOrderService) WithPrice(price float64) *CreateOrderService {
-    this.price = price
+func (this *CreateOrderService) WithQuoteAmount (quote float64) *CreateOrderService {
+    this.quoteAmount = quote
     return this
 }
 
@@ -52,5 +52,5 @@ func (this *CreateOrderService) WithBaseAmount(amount float64) *CreateOrderServi
 }
 
 func (this *CreateOrderService) Do(ctx context.Context) (Order, error){
-    return this.client.CreateOrderMarket(ctx, this.side, this.pair, this.price, this.baseAmount)
+    return this.client.CreateOrderMarket(ctx, this.side, this.pair, this.baseAmount, this.quoteAmount)
 }

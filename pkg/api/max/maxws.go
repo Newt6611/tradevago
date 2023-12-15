@@ -6,6 +6,13 @@ import (
 
 const MAX_WS_ENDPOINT = "wss://max-stream.maicoin.com/ws"
 
+type errorEvent struct {
+	Event    string   `json:"e"`
+	Errors   []string `json:"E"`
+	ClientID string   `json:"i"`
+	T        int64    `json:"T"`
+}
+
 type authenticationRequest struct {
 	Action    string   `json:"action"`
 	APIKey    string   `json:"apiKey"`
@@ -31,7 +38,6 @@ type MaxWs struct {
     apiKey              string
     apiSecret           string
     depthCache          map[string]api.WsDepth
-    userOrderCache      map[string]api.WsUserOrder
 }
 
 func NewMaxWs(apiKey string, apiSecret string) *MaxWs {
@@ -39,6 +45,5 @@ func NewMaxWs(apiKey string, apiSecret string) *MaxWs {
         apiKey: apiKey,
         apiSecret: apiSecret,
         depthCache: map[string]api.WsDepth{},
-        userOrderCache: map[string]api.WsUserOrder{},
     }
 }

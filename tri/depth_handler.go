@@ -2,41 +2,49 @@ package tri
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"github.com/Newt6611/tradevago/pkg/api"
 )
 
 type DepthHandler struct {
-    wsapi       *api.WSApi
-    depthTable  sync.Map
-    c           chan struct{}
+    wsapi               *api.WSApi
+    depthTable          sync.Map
+    c                   chan struct{}
+    notifyHandler       *NotifyHandler
 }
 
-func NewDepthHandler(apiws *api.WSApi) *DepthHandler {
+func NewDepthHandler(apiws *api.WSApi, notifyHandler *NotifyHandler) *DepthHandler {
     return &DepthHandler {
         wsapi: apiws,
         depthTable: sync.Map{},
+        notifyHandler: notifyHandler,
     }
 }
 
 func (this *DepthHandler) Handle(ctx context.Context, pairs []string, setdataf func(d *api.WsDepth, m *sync.Map)) {
     var depthDataChan chan api.WsDepth
-    var c chan struct{}
 ws:
-    depthDataChan, c = this.wsapi.RunDepthConsumer(ctx, pairs, 1)
+    depthDataChan, this.c = this.wsapi.RunDepthConsumer(ctx, pairs, 1)
     for {
         depthData := <- depthDataChan
         if depthData.Err != nil {
-            // TODO: Notify
-            fmt.Println("[DepthHandler]: " + depthData.Err.Error())
-            close(c)
+            // this.notifyHandler.MsgChan <- fmt.Sprintf("[DepthHandler]: %s", depthData.Err.Error())
+            close(this.c)
             goto ws
         }
 
         setdataf(&depthData, &this.depthTable)
     }
+}
+
+func (this *DepthHandler) IsReady() bool {
+    length := 0
+    this.depthTable.Range(func(key, value any) bool {
+        length += 1
+        return true
+    })
+    return length > 0
 }
 
 func (this *DepthHandler) GetDepth(key string) api.WsDepth {

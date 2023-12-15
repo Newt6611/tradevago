@@ -8,7 +8,7 @@ type Client interface {
     GetMakerFee() float64
     GetDepth(ctx context.Context, depthService *DepthService) (Depth, error)
     GetPairInfo(ctx context.Context) ([]PairInfo, error)
-    CreateOrderMarket(ctx context.Context, side Side, pair string, price float64, baseAmount float64) (Order, error)
+    CreateOrderMarket(ctx context.Context, side Side, pair string, baseAmount float64, quoteAmount float64) (Order, error)
     CancelAllOrder(ctx context.Context, pair string) (error)
 }
 

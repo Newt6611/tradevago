@@ -5,6 +5,7 @@ import "context"
 type WSClient interface {
     RunDepthConsumer(ctx context.Context, pairs []string, depth int) (chan WsDepth, chan struct{})
     RunUserOrderConsumer(ctx context.Context) (chan WsUserOrderDatas, chan struct{})
+    RunAccountConsumer(ctx context.Context) (chan WsUserAccountDatas, chan struct{})
 }
 
 type WSApi struct {

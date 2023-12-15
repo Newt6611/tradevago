@@ -9,7 +9,7 @@ type WsUserOrder struct {
 }
 
 type WsUserOrderDatas struct {
-    Datas           map[string]WsUserOrder
+    Datas           []WsUserOrder
     Err             error
 }
 

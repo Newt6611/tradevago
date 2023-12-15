@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/Newt6611/tradevago/internal"
 	"github.com/Newt6611/tradevago/pkg/api"
@@ -34,7 +35,7 @@ type createOrderResponse struct {
 	GroupID           *string   `json:"group_id"`
 }
 
-func (this *Max) CreateOrderMarket(ctx context.Context, side api.Side, pair string, price float64, baseAmount float64) (api.Order, error) {
+func (this *Max) CreateOrderMarket(ctx context.Context, side api.Side, pair string, baseAmount float64, quoteAmount float64) (api.Order, error) {
     path := "/api/v2/orders"
     var maxside string
     if side == api.SELL {
@@ -64,7 +65,7 @@ func (this *Max) CreateOrderMarket(ctx context.Context, side api.Side, pair stri
     createOrder := createMarketOrderRequest {
         Side: maxside,
         OrdType: "market",
-        Volume: fmt.Sprintf("%f", baseAmount),
+        Volume: strconv.FormatFloat(baseAmount, 'f', -1, 64),
         Market: pair,
     }
     reqb, err := json.Marshal(createOrder)

@@ -6,6 +6,7 @@ import (
 
 const (
     TWD         string = "MAX_TWD"
+    MAX         string = "MAX_MAX"
     USDT        string = "MAX_USDT"
     BTC         string = "MAX_BTC"
     ETH         string = "MAX_ETH"
