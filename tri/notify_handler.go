@@ -7,30 +7,34 @@ import (
 )
 
 type NotifyHandler struct {
-    MsgChan chan string
-    notifier notify.Notifier
+	MsgChan  chan string
+	notifier notify.Notifier
 }
 
 func NewNotifyHandler(notifier notify.Notifier) *NotifyHandler {
-    return &NotifyHandler{
-        MsgChan: make(chan string, 1000),
-        notifier: notifier,
-    }
+	return &NotifyHandler{
+		MsgChan:  make(chan string, 1000),
+		notifier: notifier,
+	}
 }
 
 func (this *NotifyHandler) Handle(ctx context.Context) {
-    premsg := ""
-    for {
-        msg := <-this.MsgChan
-        if msg == premsg {
-            continue
-        }
+	premsg := ""
+	for {
+		msg := <-this.MsgChan
+		if msg == premsg {
+			continue
+		}
 
-        this.notifier.SendInlineCodeMsg(ctx, msg)
-        premsg = msg
-    }
+		this.notifier.SendInlineCodeMsg(ctx, msg)
+		premsg = msg
+	}
+}
+
+func (this *NotifyHandler) HandleMessage(patterns map[string]func() string) {
+	this.notifier.HandleMessage(patterns)
 }
 
 func (this *NotifyHandler) Stop() {
-    this.notifier.Close()
+	this.notifier.Close()
 }
