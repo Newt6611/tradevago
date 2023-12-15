@@ -2,6 +2,10 @@ package notify
 
 import "context"
 
+const (
+	Sticker string = "STICKER"
+)
+
 type Notifier interface {
 	SendMsg(ctx context.Context, msg string)
 	SendCodeMsg(ctx context.Context, msg string)
