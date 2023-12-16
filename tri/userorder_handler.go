@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/Newt6611/tradevago/pkg/api"
 )
@@ -44,15 +45,26 @@ ws:
     }
 }
 
+func (this *UserOrderHandler) DeleteCompletedOrder() {
+    ticker := time.NewTicker(time.Minute * 10)
+    for {
+        <-ticker.C
+        this.userOrders.Range(func(key, value any)bool {
+            data := value.(api.WsUserOrder)
+            if data.Status == api.OrderStatusDone {
+                this.userOrders.Delete(key)
+            }
+            return true
+        })
+    }
+}
+
 func (this *UserOrderHandler) Get(id string) api.WsUserOrder {
     value, ok := this.userOrders.Load(id)
     if !ok {
         return api.WsUserOrder{}
     }
     data := value.(api.WsUserOrder)
-    if data.Status == api.OrderStatusDone {
-        this.userOrders.Delete(id)
-    }
     return data
 }
 

@@ -33,6 +33,7 @@ func StartMaxTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 
 	userOrderhandler := tri.NewUserOrderHandler(apiws, notifyHandler)
 	go userOrderhandler.Handle(ctx, setUserOrderData)
+    go userOrderhandler.DeleteCompletedOrder()
 	defer userOrderhandler.Stop()
 
 	time.Sleep(time.Millisecond * 100)

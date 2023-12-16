@@ -39,7 +39,7 @@ type userOrderEvent struct {
 }
 
 func (this *MaxWs) RunUserOrderConsumer(ctx context.Context) (chan api.WsUserOrderDatas, chan struct{}) {
-    userOrderDataChan := make(chan api.WsUserOrderDatas, 1000)
+    userOrderDataChan := make(chan api.WsUserOrderDatas, 500)
     nonce := generateNonce()
     subscriptions := authenticationRequest {
         Action: "auth",

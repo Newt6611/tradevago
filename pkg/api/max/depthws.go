@@ -44,7 +44,7 @@ func (this *MaxWs) RunDepthConsumer(ctx context.Context, pairs []string, depth i
         ID: "client1",
     }
 
-    depthDataChan := make(chan api.WsDepth, 1000)
+    depthDataChan := make(chan api.WsDepth, 500)
 
     close := internal.RunWsClient(ctx, MAX_WS_ENDPOINT, nil, subscriptions, func(ws *websocket.Conn, t int, b []byte, err error) {
         if err != nil {

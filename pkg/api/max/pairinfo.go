@@ -21,7 +21,7 @@ type pairInfo struct {
 	MWalletSupported     bool    `json:"m_wallet_supported"`
 }
 
-func (m *Max) GetPairInfo(ctx context.Context) ([]api.PairInfo, error) {
+func (m *Max) GetPairInfo(ctx context.Context, pairs []string) ([]api.PairInfo, error) {
     res, err := internal.Get(ctx, MAX_API_ENDPOINT +  "/api/v2/markets", nil, nil)
     if err != nil {
         return []api.PairInfo{}, err

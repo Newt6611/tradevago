@@ -27,7 +27,7 @@ type balance struct {
 }
 
 func (this *MaxWs) RunAccountConsumer(ctx context.Context) (chan api.WsUserAccountDatas, chan struct{}){
-    userAccountChan := make(chan api.WsUserAccountDatas, 1000)
+    userAccountChan := make(chan api.WsUserAccountDatas, 500)
 
     nonce := generateNonce()
     subscriptions := authenticationRequest {

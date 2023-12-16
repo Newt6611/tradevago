@@ -16,6 +16,7 @@ type PairInfo struct {
 
 type PairInfoService struct {
     client Client
+    pairs []string
 }
 
 
@@ -25,6 +26,11 @@ func (c *Api) NewPairInfoService() *PairInfoService {
     }
 }
 
+func (this *PairInfoService) WithPairs(pairs []string) *PairInfoService {
+    this.pairs = pairs
+    return this
+}
+
 func (this *PairInfoService) Do(ctx context.Context) ([]PairInfo, error) {
-    return this.client.GetPairInfo(ctx)
+    return this.client.GetPairInfo(ctx, this.pairs)
 }
