@@ -120,6 +120,7 @@ second:
 		Do(ctx)
 	if err != nil {
 		this.notifyHandler.MsgChan <- err.Error()
+        this.notifyHandler.MsgChan <- fmt.Sprintf("Amount: %f, BaseAmount: %f, QuoteAmount: %f, Ask price: %f", amount, baseAmount, quoteAmount, askPrice)
 		this.apiClient.NewCancelAllOrderService().WithPair(symbols[1]).Do(ctx)
 		return
 	}
