@@ -27,6 +27,7 @@ func Get(ctx context.Context, requestUrl string, query url.Values, headers map[s
 }
 
 func Post(ctx context.Context, requestUrl string, b []byte, headers map[string]string) ([]byte, error){
+
     req, err := http.NewRequest(http.MethodPost, requestUrl, bytes.NewReader(b))
     if err != nil {
         return []byte{}, err
