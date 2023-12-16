@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/Newt6611/tradevago/pkg/api"
 	"github.com/Newt6611/tradevago/pkg/api/max"
@@ -21,22 +24,36 @@ func init() {
 }
 
 func main() {
-	// Notify bot
-	tgToken := viper.GetString("TELEGRAM.TOKEN")
-	tgChannelId := viper.GetInt64("TELEGRAM.MAX.CHANNEL_ID")
-	bot := telegram.NewTelegramClient(tgToken, tgChannelId)
+    termChan := make(chan os.Signal, 1)
+    signal.Notify(termChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
 
-	// Setup Max Api key Secret key
-	apiKey := viper.GetString("MAX.API_KEY")
-	apiSecret := viper.GetString("MAX.API_SECRET")
-	takerFee := viper.GetFloat64("MAX.TAKER_FEE")
-	makerFee := viper.GetFloat64("MAX.MAKER_FEE")
+    var bot *telegram.TelegramClient
 
-	client := max.NewMaxClient(apiKey, apiSecret, takerFee, makerFee)
-	apiClient := api.NewApi(client)
+    go func() {
+        // Notify bot
+        tgToken := viper.GetString("TELEGRAM.TOKEN")
+        tgChannelId := viper.GetInt64("TELEGRAM.MAX.CHANNEL_ID")
+        bot = telegram.NewTelegramClient(tgToken, tgChannelId)
 
-	wsclient := max.NewMaxWs(apiKey, apiSecret)
-	apiws := api.NewWsApi(wsclient)
+        // Setup Max Api key Secret key
+        apiKey := viper.GetString("MAX.API_KEY")
+        apiSecret := viper.GetString("MAX.API_SECRET")
+        takerFee := viper.GetFloat64("MAX.TAKER_FEE")
+        makerFee := viper.GetFloat64("MAX.MAKER_FEE")
 
-	maxtri.StartMaxTri(apiClient, apiws, bot)
+        client := max.NewMaxClient(apiKey, apiSecret, takerFee, makerFee)
+        apiClient := api.NewApi(client)
+
+        wsclient := max.NewMaxWs(apiKey, apiSecret)
+        apiws := api.NewWsApi(wsclient)
+
+        maxtri.StartMaxTri(apiClient, apiws, bot)
+
+    }()
+
+    for {
+        <-termChan
+        bot.SendCodeMsg(context.Background(), "機器人已被關閉")
+        os.Exit(0)
+    }
 }
