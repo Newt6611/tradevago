@@ -20,7 +20,7 @@ func StartMaxTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 	defer notifyHandler.Stop()
 
 	depthHandler := tri.NewDepthHandler(apiws, notifyHandler)
-	go depthHandler.Handle(ctx, cycles.GetPairs(), setupDepthData)
+	go depthHandler.Handle(ctx, cycles.GetPairs(), 1, setupDepthData)
 	defer depthHandler.Stop()
 
 	time.Sleep(time.Millisecond * 100)
@@ -48,37 +48,35 @@ func StartMaxTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 
 	ticker := time.NewTicker(time.Millisecond * 500)
 	cycless := cycles.GetCycles()
-	for {
-		if depthHandler.IsReady() {
-			break
-		}
-	}
-	fmt.Println("depth handler ready")
-	for {
-		if balanceHandler.IsReady(cycles.TWD) {
-			break
-		}
-	}
-	fmt.Println("balance handler ready")
+
+	for !depthHandler.IsReady() {}
+    fmt.Println("Depth Handler Ready")
+
+	for !balanceHandler.IsReady(cycles.TWD) {}
+    fmt.Println("Balance Handlder Ready")
+
+    for !pairInfoHandler.IsReady() {}
+    fmt.Println("PairInfo Handlder Ready")
+
 	go tradeEngine.TradeEnd(ctx, &isTrading, getAllCurrencyToCheck, getTwdQuotePair)
-	notifyHandler.MsgChan <- "開始運作"
+	notifyHandler.SendMsg("開始運作")
 
 	for {
 		tri.ClearScreen()
 		for _, cycle := range cycless {
 			maxAmount := balanceHandler.Get(cycles.MAX).Balance
 			if maxAmount < 50 {
-				notifyHandler.MsgChan <- fmt.Sprintf("MAX幣少於 50, 請趕快補充 %f", maxAmount)
+				notifyHandler.SendMsg(fmt.Sprintf("MAX幣少於 50, 請趕快補充 %f", maxAmount))
 				continue
 			}
 
 			startTime := time.Now()
 			rate, maxOrderAmount := tri.CycleHandler(api, depthHandler, cycle)
-			if rate > 1.017 {
+			if rate > 1.02 {
 				currentTwdBalance := balanceHandler.Get(cycles.TWD).Balance
 
 				if currentTwdBalance <= 0 || currentTwdBalance < 800 {
-					notifyHandler.MsgChan <- fmt.Sprintf("TWD 餘額不足(800), %f", currentTwdBalance)
+					notifyHandler.SendMsg(fmt.Sprintf("TWD 餘額不足(800), %f", currentTwdBalance))
 					continue
 				}
 
@@ -97,6 +95,4 @@ func StartMaxTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 		}
 		<-ticker.C
 	}
-	fmt.Println("done")
-	time.Sleep(time.Second * 5)
 }

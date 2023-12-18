@@ -2,6 +2,7 @@ package tri
 
 import (
 	"context"
+	"math"
 	"sync"
 
 	"github.com/Newt6611/tradevago/pkg/api"
@@ -12,6 +13,7 @@ type DepthHandler struct {
     depthTable          sync.Map
     c                   chan struct{}
     notifyHandler       *NotifyHandler
+    pairsCount          int
 }
 
 func NewDepthHandler(apiws *api.WSApi, notifyHandler *NotifyHandler) *DepthHandler {
@@ -19,13 +21,15 @@ func NewDepthHandler(apiws *api.WSApi, notifyHandler *NotifyHandler) *DepthHandl
         wsapi: apiws,
         depthTable: sync.Map{},
         notifyHandler: notifyHandler,
+        pairsCount: math.MaxInt32,
     }
 }
 
-func (this *DepthHandler) Handle(ctx context.Context, pairs []string, setdataf func(d *api.WsDepth, m *sync.Map)) {
+func (this *DepthHandler) Handle(ctx context.Context, pairs []string, depth int, setdataf func(d *api.WsDepth, m *sync.Map)) {
     var depthDataChan chan api.WsDepth
+    this.pairsCount = len(pairs)
 ws:
-    depthDataChan, this.c = this.wsapi.RunDepthConsumer(ctx, pairs, 1)
+    depthDataChan, this.c = this.wsapi.RunDepthConsumer(ctx, pairs, depth)
     for {
         depthData := <- depthDataChan
         if depthData.Err != nil {
@@ -44,7 +48,7 @@ func (this *DepthHandler) IsReady() bool {
         length += 1
         return true
     })
-    return length > 0
+    return length >= this.pairsCount
 }
 
 func (this *DepthHandler) GetDepth(key string) api.WsDepth {

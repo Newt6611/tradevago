@@ -31,7 +31,7 @@ func main() {
 
     go func() {
         // Notify bot
-        tgToken := viper.GetString("TELEGRAM.TOKEN")
+        tgToken := viper.GetString("TELEGRAM.MAX.TOKEN")
         tgChannelId := viper.GetInt64("TELEGRAM.MAX.CHANNEL_ID")
         bot = telegram.NewTelegramClient(tgToken, tgChannelId)
 

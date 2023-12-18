@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Newt6611/tradevago/pkg/notify"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -67,6 +68,7 @@ func (this *TelegramClient) HandleMessage(patterns map[string]func() string) {
 			}
 		}
 		if update.Message != nil { // If we got a message
+            fmt.Println(update.Message.Chat.ID)
 			if f, ok := patterns[update.Message.Text]; ok {
 				msg := this.newMarkDownMessage()
 				msg.Text = f()

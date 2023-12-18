@@ -6,6 +6,7 @@ import (
 
 	"github.com/Newt6611/tradevago/pkg/api"
 	"github.com/Newt6611/tradevago/pkg/api/binance"
+	"github.com/Newt6611/tradevago/pkg/notify/telegram"
 	tri "github.com/Newt6611/tradevago/tri/binance"
 	"github.com/spf13/viper"
 )
@@ -20,21 +21,21 @@ func init() {
 }
 
 func main() {
-	// tgToken := viper.GetString("TELEGRAM.TOKEN")
-	// tgChannelId := viper.GetInt64("TELEGRAM.MAX.CHANNEL_ID")
-	// bot := telegram.NewTelegramClient(tgToken, tgChannelId)
+	tgToken := viper.GetString("TELEGRAM.BINANCE.TOKEN")
+	tgChannelId := viper.GetInt64("TELEGRAM.BINANCE.CHANNEL_ID")
+	bot := telegram.NewTelegramClient(tgToken, tgChannelId)
 
 	// Setup Max Api key Secret key
-	// apiKey := viper.GetString("MAX.API_KEY")
-	// apiSecret := viper.GetString("MAX.API_SECRET")
-	// takerFee := viper.GetFloat64("MAX.TAKER_FEE")
-	// makerFee := viper.GetFloat64("MAX.MAKER_FEE")
+	apiKey := viper.GetString("MAX.API_KEY")
+	apiSecret := viper.GetString("MAX.API_SECRET")
+	takerFee := viper.GetFloat64("MAX.TAKER_FEE")
+	makerFee := viper.GetFloat64("MAX.MAKER_FEE")
 
-	client := binance.NewBinance("", "", 0, 0)
+	client := binance.NewBinance(apiKey, apiSecret, takerFee, makerFee)
 	apiClient := api.NewApi(client)
 
-	wsclient := binance.NewBinanceWs("", "")
+	wsclient := binance.NewBinanceWs(apiKey, apiSecret)
 	apiws := api.NewWsApi(wsclient)
 
-    tri.StartBinanceTri(apiClient, apiws, nil)
+    tri.StartBinanceTri(apiClient, apiws, bot)
 }

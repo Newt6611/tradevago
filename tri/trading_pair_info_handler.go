@@ -50,3 +50,7 @@ func (this *TradingPairInfoHandler) Get(name string) api.PairInfo {
     info = this.pairInfos[name]
     return info
 }
+
+func (this *TradingPairInfoHandler) IsReady() bool {
+    return len(this.pairInfos) > 0
+}
