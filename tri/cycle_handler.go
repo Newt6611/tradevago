@@ -7,18 +7,18 @@ import (
 )
 
 func CycleHandler(apiClient *api.Api, depthHandler *DepthHandler, cycle Cycle) (float64, float64) {
-    var baseAmount float64 = 1
+    var rate float64 = 1
     symbols := cycle.GetSymbols()
     sides := cycle.GetSides()
     orderAmount := math.MaxFloat64
 
     for i := 0; i < 3; i++ {
         depth := depthHandler.GetDepth(symbols[i])
-        baseAmount = resolveAmount(apiClient, baseAmount, depth, sides[i])
+        rate = resolveAmount(apiClient, rate, depth, sides[i])
         orderAmount = resolveOrderAmount(sides[i], depth, orderAmount)
     }
 
-    return baseAmount, orderAmount
+    return rate, orderAmount
 }
 
 func resolveAmount(apiClient *api.Api, baseAmount float64, depth api.WsDepth, side api.Side) float64 {

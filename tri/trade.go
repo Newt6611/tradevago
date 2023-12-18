@@ -41,12 +41,23 @@ func (this *TradeEngine) StartTrade(ctx context.Context, cycle Cycle, startAmoun
 	symbols := cycle.GetSymbols()
 	sides := cycle.GetSides()
 
-    limitBuyQuote, limitSellBase := this.getLimitBuySellQty(symbols[0])
+    var quoteAmount, baseAmount float64
+    for i := 0; i < 3; i++ {
+        amount := startAmount
+        if i > 0 {
+            if sides[i - 1] == api.BUY {
+                amount = baseAmount
+            } else if sides[i - 1] == api.SELL {
+                amount = quoteAmount
+            }
+        }
+        quoteAmount, baseAmount = this.updateQuoteBaseAmount(symbols[i], amount, sides[i])
 
-    quoteAmount, baseAmount := this.updateQuoteBaseAmount(symbols[0], startAmount, sides[0])
+        limitBuyQuote, limitSellBase := this.getLimitBuySellQty(symbols[i])
 
-    if quoteAmount < limitBuyQuote || baseAmount < limitSellBase {
-        return
+        if quoteAmount < limitBuyQuote || baseAmount < limitSellBase {
+            return
+        }
     }
 
     this.notifyHandler.SendMsg(fmt.Sprintf("%s [開始交易 %s], 初始金額 %f, 最大金額 %f, rate: %f",
@@ -55,15 +66,14 @@ func (this *TradeEngine) StartTrade(ctx context.Context, cycle Cycle, startAmoun
     for i := 0; i < 3; i++ {
         if i > 0 { // 第一 round 不執行
             startAmount = this.waitToGetBalanceAmount(ctx, symbolToCheck[i], symbols[i], sides[i])
-            quoteAmount, baseAmount = this.updateQuoteBaseAmount(symbols[i], startAmount, sides[i])
         }
 
+        quoteAmount, baseAmount = this.updateQuoteBaseAmount(symbols[i], startAmount, sides[i])
         this.notifyHandler.SendMsg(fmt.Sprintf("[開始交易 %s] %d", symbols[i], i + 1))
         order, err := this.createOrder(ctx, symbols[i], sides[i], baseAmount, quoteAmount)
 
         if err != nil {
             this.notifyHandler.SendMsg(err.Error())
-            this.apiClient.NewCancelAllOrderService().WithPair(symbols[i]).Do(ctx)
             return
         }
 
