@@ -55,16 +55,6 @@ func (this *TradeEngine) StartTrade(ctx context.Context, cycle Cycle, startAmoun
 
     var quoteAmount, baseAmount float64
     for i := 0; i < 3; i++ {
-        //--
-        ask := this.depthHandler.GetDepth(symbols[i]).Asks[0]
-        bid := this.depthHandler.GetDepth(symbols[i]).Bids[0]
-        this.notifyHandler.SendMsg(fmt.Sprintf("%s Ask Price: %f, Amount: %f", 
-                                                symbols[i], ask.Price, ask.Amount))
-
-        this.notifyHandler.SendMsg(fmt.Sprintf("Bid Price: %f, Amount: %f", 
-                                                bid.Price, bid.Amount))
-        //--
-
         amount := startAmount
         if i > 0 {
             if sides[i - 1] == api.BUY {
@@ -86,6 +76,16 @@ func (this *TradeEngine) StartTrade(ctx context.Context, cycle Cycle, startAmoun
         cycle.GetName(), symbols[0], startAmount, maxStartAmount, rate))
 
     for i := 0; i < 3; i++ {
+        //--
+        ask := this.depthHandler.GetDepth(symbols[i]).Asks[0]
+        bid := this.depthHandler.GetDepth(symbols[i]).Bids[0]
+        this.notifyHandler.SendMsg(fmt.Sprintf("%s Ask Price: %f, Amount: %f", 
+                                                symbols[i], ask.Price, ask.Amount))
+
+        this.notifyHandler.SendMsg(fmt.Sprintf("Bid Price: %f, Amount: %f", 
+                                                bid.Price, bid.Amount))
+        //--
+
         if i > 0 { // 第一 round 不執行
             startAmount = this.waitToGetBalanceAmount(ctx, symbolToCheck[i], symbols[i], sides[i])
         }
