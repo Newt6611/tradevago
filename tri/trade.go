@@ -41,8 +41,30 @@ func (this *TradeEngine) StartTrade(ctx context.Context, cycle Cycle, startAmoun
 	symbols := cycle.GetSymbols()
 	sides := cycle.GetSides()
 
+    //--
+    for i := 0; i < 3; i++ {
+        ask := this.depthHandler.GetDepth(symbols[i]).Asks[0]
+        bid := this.depthHandler.GetDepth(symbols[i]).Bids[0]
+        this.notifyHandler.SendMsg(fmt.Sprintf("%s Ask Price: %f, Amount: %f", 
+                                                symbols[i], ask.Price, ask.Amount))
+
+        this.notifyHandler.SendMsg(fmt.Sprintf("Bid Price: %f, Amount: %f", 
+                                                bid.Price, bid.Amount))
+    }
+    //--
+
     var quoteAmount, baseAmount float64
     for i := 0; i < 3; i++ {
+        //--
+        ask := this.depthHandler.GetDepth(symbols[i]).Asks[0]
+        bid := this.depthHandler.GetDepth(symbols[i]).Bids[0]
+        this.notifyHandler.SendMsg(fmt.Sprintf("%s Ask Price: %f, Amount: %f", 
+                                                symbols[i], ask.Price, ask.Amount))
+
+        this.notifyHandler.SendMsg(fmt.Sprintf("Bid Price: %f, Amount: %f", 
+                                                bid.Price, bid.Amount))
+        //--
+
         amount := startAmount
         if i > 0 {
             if sides[i - 1] == api.BUY {

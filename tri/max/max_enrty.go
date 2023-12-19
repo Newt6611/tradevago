@@ -43,8 +43,8 @@ func StartMaxTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 
 	tradeEngine := tri.NewTradeEngine(api, depthHandler, pairInfoHandler, balanceHandler, notifyHandler, userOrderhandler)
 	isTrading := false
-	//-------------------------------//
 	go notifyHandler.HandleMessage(notifierCmds(balanceHandler))
+	//-------------------------------//
 
 	ticker := time.NewTicker(time.Millisecond * 500)
 	cycless := cycles.GetCycles()

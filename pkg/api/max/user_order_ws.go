@@ -66,7 +66,7 @@ func (this *MaxWs) RunUserOrderConsumer(ctx context.Context) (chan api.WsUserOrd
         var orderEvent userOrderEvent
         err = json.Unmarshal(b, &orderEvent)
         if err == nil {
-            orders := handleUserOrderSnapShot(orderEvent)
+            orders := handleUserOrder(orderEvent)
             userOrderDataChan <- api.WsUserOrderDatas { Datas: orders, Err: nil }
             return
         }
@@ -74,7 +74,7 @@ func (this *MaxWs) RunUserOrderConsumer(ctx context.Context) (chan api.WsUserOrd
     return userOrderDataChan, close
 }
 
-func handleUserOrderSnapShot(userOrder userOrderEvent) []api.WsUserOrder {
+func handleUserOrder(userOrder userOrderEvent) []api.WsUserOrder {
     orders := []api.WsUserOrder{}
     for _, order := range userOrder.Orders {
         orders = append(orders, api.WsUserOrder {

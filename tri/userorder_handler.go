@@ -51,7 +51,7 @@ func (this *UserOrderHandler) DeleteCompletedOrder() {
         <-ticker.C
         this.userOrders.Range(func(key, value any)bool {
             data := value.(api.WsUserOrder)
-            if data.Status == api.OrderStatusDone {
+            if data.Status == api.OrderStatusDone || data.Status == api.OrderStatusCancel {
                 this.userOrders.Delete(key)
             }
             return true

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -26,16 +27,23 @@ func main() {
 	bot := telegram.NewTelegramClient(tgToken, tgChannelId)
 
 	// Setup Max Api key Secret key
-	apiKey := viper.GetString("MAX.API_KEY")
-	apiSecret := viper.GetString("MAX.API_SECRET")
-	takerFee := viper.GetFloat64("MAX.TAKER_FEE")
-	makerFee := viper.GetFloat64("MAX.MAKER_FEE")
+	apiKey := viper.GetString("BINANCE.API_KEY")
+	apiSecret := viper.GetString("BINANCE.API_SECRET")
+	takerFee := viper.GetFloat64("BINANCE.TAKER_FEE")
+	makerFee := viper.GetFloat64("BINANCE.MAKER_FEE")
 
 	client := binance.NewBinance(apiKey, apiSecret, takerFee, makerFee)
 	apiClient := api.NewApi(client)
 
 	wsclient := binance.NewBinanceWs(apiKey, apiSecret)
 	apiws := api.NewWsApi(wsclient)
+
+    datas, _ := wsclient.RunUserOrderConsumer(context.Background())
+    for {
+        data := <- datas
+
+        fmt.Println(data)
+    }
 
     tri.StartBinanceTri(apiClient, apiws, bot)
 }
