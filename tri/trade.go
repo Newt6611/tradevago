@@ -41,17 +41,6 @@ func (this *TradeEngine) StartTrade(ctx context.Context, cycle Cycle, startAmoun
 	symbols := cycle.GetSymbols()
 	sides := cycle.GetSides()
 
-    //--
-    for i := 0; i < 3; i++ {
-        ask := this.depthHandler.GetDepth(symbols[i]).Asks[0]
-        bid := this.depthHandler.GetDepth(symbols[i]).Bids[0]
-        this.notifyHandler.SendMsg(fmt.Sprintf("%s Ask Price: %f, Amount: %f", 
-                                                symbols[i], ask.Price, ask.Amount))
-
-        this.notifyHandler.SendMsg(fmt.Sprintf("Bid Price: %f, Amount: %f", 
-                                                bid.Price, bid.Amount))
-    }
-    //--
 
     var quoteAmount, baseAmount float64
     for i := 0; i < 3; i++ {
@@ -71,6 +60,18 @@ func (this *TradeEngine) StartTrade(ctx context.Context, cycle Cycle, startAmoun
             return
         }
     }
+
+    //--
+    for i := 0; i < 3; i++ {
+        ask := this.depthHandler.GetDepth(symbols[i]).Asks[0]
+        bid := this.depthHandler.GetDepth(symbols[i]).Bids[0]
+        this.notifyHandler.SendMsg(fmt.Sprintf("%s Ask Price: %f, Amount: %f", 
+                                                symbols[i], ask.Price, ask.Amount))
+
+        this.notifyHandler.SendMsg(fmt.Sprintf("Bid Price: %f, Amount: %f", 
+                                                bid.Price, bid.Amount))
+    }
+    //--
 
     this.notifyHandler.SendMsg(fmt.Sprintf("%s [開始交易 %s], 初始金額 %f, 最大金額 %f, rate: %f",
         cycle.GetName(), symbols[0], startAmount, maxStartAmount, rate))
