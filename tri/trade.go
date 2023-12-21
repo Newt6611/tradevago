@@ -2,6 +2,7 @@ package tri
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"time"
@@ -61,41 +62,25 @@ func (this *TradeEngine) StartTrade(ctx context.Context, cycle Cycle, startAmoun
         }
     }
 
-    //--
-    for i := 0; i < 3; i++ {
-        ask := this.depthHandler.GetDepth(symbols[i]).Asks[0]
-        bid := this.depthHandler.GetDepth(symbols[i]).Bids[0]
-        this.notifyHandler.SendMsg(fmt.Sprintf("%s Ask Price: %f, Amount: %f", 
-                                                symbols[i], ask.Price, ask.Amount))
-
-        this.notifyHandler.SendMsg(fmt.Sprintf("Bid Price: %f, Amount: %f", 
-                                                bid.Price, bid.Amount))
-    }
-    //--
-
     this.notifyHandler.SendMsg(fmt.Sprintf("%s [開始交易 %s], 初始金額 %f, 最大金額 %f, rate: %f",
         cycle.GetName(), symbols[0], startAmount, maxStartAmount, rate))
 
     for i := 0; i < 3; i++ {
-        //--
-        ask := this.depthHandler.GetDepth(symbols[i]).Asks[0]
-        bid := this.depthHandler.GetDepth(symbols[i]).Bids[0]
-        this.notifyHandler.SendMsg(fmt.Sprintf("%s Ask Price: %f, Amount: %f", 
-                                                symbols[i], ask.Price, ask.Amount))
-
-        this.notifyHandler.SendMsg(fmt.Sprintf("Bid Price: %f, Amount: %f", 
-                                                bid.Price, bid.Amount))
-        //--
-
         if i > 0 { // 第一 round 不執行
             startAmount = this.waitToGetBalanceAmount(ctx, symbolToCheck[i], symbols[i], sides[i])
         }
 
+        trade:
         quoteAmount, baseAmount = this.updateQuoteBaseAmount(symbols[i], startAmount, sides[i])
         this.notifyHandler.SendMsg(fmt.Sprintf("[開始交易 %s] %d", symbols[i], i + 1))
         order, err := this.createOrder(ctx, symbols[i], sides[i], baseAmount, quoteAmount)
 
-        if err != nil {
+        if err != nil && errors.Is(err, api.ErrorBalanceNotEnougth) {
+            quoteAmount *= 0.95
+            baseAmount *= 0.95
+            this.notifyHandler.SendMsg(fmt.Sprintf("%s resent quoteAmount: %f, baseAmount: %f", err.Error(), quoteAmount, baseAmount))
+            goto trade
+        } else if err != nil {
             this.notifyHandler.SendMsg(err.Error())
             return
         }

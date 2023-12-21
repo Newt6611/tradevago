@@ -1,9 +1,15 @@
 package api
 
-import "context"
+import (
+	"context"
+	"errors"
+)
 
 type OrderStatus string
 
+var (
+    ErrorBalanceNotEnougth = errors.New("Error Balance Not Enougth")
+)
 const (
     OrderStatusWait     OrderStatus = "Wait"
     OrderStatusDone     OrderStatus = "Done"

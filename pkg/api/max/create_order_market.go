@@ -61,7 +61,6 @@ func (this *Max) CreateOrderMarket(ctx context.Context, side api.Side, pair stri
     headers["X-MAX-PAYLOAD"] = payload
     headers["X-MAX-SIGNATURE"] = createSignatureWithPayload(payload, this.apiSecret)
     //---------------------------------------------------------------------//
-
     createOrder := createMarketOrderRequest {
         Side: maxside,
         OrdType: "market",
@@ -73,6 +72,13 @@ func (this *Max) CreateOrderMarket(ctx context.Context, side api.Side, pair stri
         return api.Order{}, err
     }
     res, err := internal.Post(ctx, MAX_API_ENDPOINT + path, reqb, headers)
+
+    var errResponse apiErrorResponse
+    err = json.Unmarshal(res, &errResponse)
+	if err == nil && errResponse.Error.Code == 2018 {
+		return api.Order{}, api.ErrorBalanceNotEnougth
+	}
+
 
     var resOrder createOrderResponse
     err = json.Unmarshal(res, &resOrder)
