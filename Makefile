@@ -1,3 +1,6 @@
+run:
+	go run cmd/main.go
+
 binance:
 	go run cmd/binance/main.go
 

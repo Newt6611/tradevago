@@ -33,7 +33,6 @@ func StartMaxTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 
 	userOrderhandler := tri.NewUserOrderHandler(apiws, notifyHandler)
 	go userOrderhandler.Handle(ctx, setUserOrderData)
-    go userOrderhandler.DeleteCompletedOrder()
 	defer userOrderhandler.Stop()
 
 	time.Sleep(time.Millisecond * 100)
@@ -45,6 +44,8 @@ func StartMaxTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 	isTrading := false
 	go notifyHandler.HandleMessage(notifierCmds(balanceHandler))
 	//-------------------------------//
+
+    go userOrderhandler.DeleteCompletedOrder(&isTrading)
 
 	ticker := time.NewTicker(time.Millisecond * 500)
 	cycless := cycles.GetCycles()

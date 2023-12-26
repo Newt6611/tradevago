@@ -64,7 +64,7 @@ func (this *Max) CreateOrderMarket(ctx context.Context, side api.Side, pair stri
     createOrder := createMarketOrderRequest {
         Side: maxside,
         OrdType: "market",
-        Volume: strconv.FormatFloat(baseAmount, 'f', -1, 64),
+        Volume: strconv.FormatFloat(baseAmount, 'f', -1, 32),
         Market: pair,
     }
     reqb, err := json.Marshal(createOrder)

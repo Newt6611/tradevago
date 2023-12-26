@@ -1,4 +1,4 @@
-package main
+package max
 
 import (
 	"context"
@@ -14,16 +14,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func init() {
-	workingDir, _ := os.Getwd()
-	viper.SetConfigFile(workingDir + "/config.yaml")
-	if err := viper.ReadInConfig(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-}
-
-func main() {
+func EntryPoint() {
     termChan := make(chan os.Signal, 1)
     signal.Notify(termChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
 
@@ -34,6 +25,8 @@ func main() {
         tgToken := viper.GetString("TELEGRAM.MAX.TOKEN")
         tgChannelId := viper.GetInt64("TELEGRAM.MAX.CHANNEL_ID")
         bot = telegram.NewTelegramClient(tgToken, tgChannelId)
+        fmt.Println(tgToken)
+        fmt.Println(tgChannelId)
 
         // Setup Max Api key Secret key
         apiKey := viper.GetString("MAX.API_KEY")

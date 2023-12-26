@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  tradevago:
+    image: newt6611/tri:latest
+    environment:
+      DOCKER: "true"
+      PLATFORM: "max"
+
+      MAX.API_KEY: ""
+      MAX.API_SECRET: ""
+      MAX.TAKER_FEE: 0.00075
+      MAX.MAKER_FEE: 0.0005
+
+      TELEGRAM.MAX.TOKEN: ""
+      TELEGRAM.MAX.CHANNEL_ID: ""

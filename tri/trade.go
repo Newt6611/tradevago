@@ -69,10 +69,11 @@ func (this *TradeEngine) StartTrade(ctx context.Context, cycle Cycle, startAmoun
         if i > 0 { // 第一 round 不執行
             startAmount = this.waitToGetBalanceAmount(ctx, symbolToCheck[i], symbols[i], sides[i])
         }
-
-        trade:
         quoteAmount, baseAmount = this.updateQuoteBaseAmount(symbols[i], startAmount, sides[i])
+        fmt.Println(quoteAmount, baseAmount)
+trade:
         this.notifyHandler.SendMsg(fmt.Sprintf("[開始交易 %s] %d", symbols[i], i + 1))
+
         order, err := this.createOrder(ctx, symbols[i], sides[i], baseAmount, quoteAmount)
 
         if err != nil && errors.Is(err, api.ErrorBalanceNotEnougth) {
@@ -87,7 +88,6 @@ func (this *TradeEngine) StartTrade(ctx context.Context, cycle Cycle, startAmoun
 
         this.waitToGetCertainOrderDone(order.Id)
         this.notifyHandler.SendMsg(fmt.Sprintf("第 %d 單完成", i + 1))
-
     }
 
 	this.notifyHandler.SendMsg(fmt.Sprintf("[%s]: 完成訂單, 完成時間 %v ", cycle.GetName(), time.Since(startTime)))
@@ -122,6 +122,8 @@ func (this *TradeEngine) createOrder(ctx context.Context, symbol string, side ap
 func (this *TradeEngine) updateQuoteBaseAmount(symbol string, amount float64, side api.Side) (float64, float64) {
     quotePrecision, basePrecision := this.getQuoteBasePrecisions(symbol)
     askPrice, bidPrice := this.getAskBidPrice(symbol)
+    stepSize := this.getStepSize(symbol)
+
     var quoteAmount, baseAmount float64
     switch side {
     case api.BUY:
@@ -130,6 +132,10 @@ func (this *TradeEngine) updateQuoteBaseAmount(symbol string, amount float64, si
     case api.SELL:
         baseAmount = roundToDecimalPlaces(amount, basePrecision)
         quoteAmount = roundToDecimalPlaces(baseAmount * bidPrice, quotePrecision)
+    }
+    if stepSize > 0 {
+        // quoteAmount = applyStepSize(quoteAmount, stepSize)
+        baseAmount = applyStepSize(baseAmount, stepSize)
     }
     return quoteAmount, baseAmount
 }
@@ -149,6 +155,10 @@ func (this *TradeEngine) getQuoteBasePrecisions(symbol string) (int, int) {
     return quotePrecision, basePrecision
 }
 
+func (this *TradeEngine) getStepSize(symbol string) float64 {
+    return this.tradingPairInfoHandler.Get(symbol).StepSize
+}
+
 func (this *TradeEngine) getLimitBuySellQty(symbol string) (float64, float64) {
     limitBuyQuote := this.tradingPairInfoHandler.Get(symbol).MinQuoteAmount
     limitSellBase := this.tradingPairInfoHandler.Get(symbol).MinBaseAmount
@@ -164,4 +174,10 @@ func (this *TradeEngine) getAskBidPrice(symbol string) (float64, float64) {
 func roundToDecimalPlaces(value float64, decimalPlaces int) float64 {
 	precision := math.Pow10(decimalPlaces)
 	return math.Floor(value*precision) / precision
+}
+
+func applyStepSize(value, stepsize float64) float64 {
+	nearestMultiple := math.Floor(value / stepsize)
+	result := nearestMultiple * stepsize
+	return result
 }

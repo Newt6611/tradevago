@@ -45,7 +45,10 @@ ws:
     }
 }
 
-func (this *UserOrderHandler) DeleteCompletedOrder() {
+func (this *UserOrderHandler) DeleteCompletedOrder(isTrading *bool) {
+    if *isTrading {
+        return
+    }
     ticker := time.NewTicker(time.Minute * 10)
     for {
         <-ticker.C

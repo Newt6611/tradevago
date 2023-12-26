@@ -9,31 +9,28 @@ import (
 )
 
 // 交易過程中可能會出現身上有多餘的幣沒有賣完, 此 function 會定期去檢查身上的幣, 若有多出來則會賣掉
-func (this *TradeEngine) TradeEnd(ctx context.Context, isTrading *bool, currencyToCheck func() []string, convertPair func(string) string) {
+func (this *TradeEngine) TradeEnd(ctx context.Context, isTrading *bool, currencyToCheck func() map[string]api.Side, convertPair func(string) string) {
 	ticker := time.NewTicker(time.Second)
 
 	for {
-		for _, c := range currencyToCheck() {
+		for currency, side := range currencyToCheck() {
 			if *isTrading {
 				continue
 			}
-			pair := convertPair(c)
+			pair := convertPair(currency)
 			pairInfo := this.tradingPairInfoHandler.Get(pair)
-			balance := this.balanceHandler.Get(c).Balance
+			balance := this.balanceHandler.Get(currency).Balance
 
-			if balance > pairInfo.MinBaseAmount {
-				price := this.depthHandler.GetDepth(pair).Bids[0].Price
-				baseAmount := roundToDecimalPlaces(balance, pairInfo.BaseUnitPrecision)
-				quoteAmount := roundToDecimalPlaces(baseAmount*price, pairInfo.QuoteUnitPrecision)
-				this.apiClient.NewCreateOrderMarketService().
-					WithPair(pair).
-					WithSide(api.SELL).
-					WithBaseAmount(baseAmount).
-					WithQuoteAmount(quoteAmount).
-					Do(ctx)
+            quoteAmount, baseAmount := this.updateQuoteBaseAmount(pair, balance, side)
 
-				this.notifyHandler.SendMsg(fmt.Sprintf("完成未被賣完全的幣 %s, %f", c, balance))
-			}
+            if quoteAmount > pairInfo.MinQuoteAmount || baseAmount > pairInfo.MinBaseAmount {
+                _, err := this.createOrder(ctx, pair, side, baseAmount, quoteAmount)
+                if err != nil {
+                    this.notifyHandler.SendMsg(fmt.Sprintf("賣餘幣時發生錯誤 %s", err.Error()))
+                } else {
+                    this.notifyHandler.SendMsg(fmt.Sprintf("完成未被賣完全的幣 %s, %f", currency, balance))
+                }
+            }
 		}
 		<-ticker.C
 	}

@@ -21,8 +21,10 @@ func mapPairInfo(symbols []b.Symbol) []api.PairInfo {
     pairInfos := []api.PairInfo{}
 
     for _, symbol := range symbols {
+        stepSizeFloat, _ := strconv.ParseFloat(symbol.LotSizeFilter().StepSize, 64)
         pairInfo := api.PairInfo {
             Name: symbol.Symbol,
+            StepSize: stepSizeFloat,
             MarketStatus: symbol.Status,
             BaseUnit: symbol.BaseAsset,
             BaseUnitPrecision: symbol.BaseAssetPrecision,

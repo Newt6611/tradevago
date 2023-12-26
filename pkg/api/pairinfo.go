@@ -3,14 +3,15 @@ package api
 import "context"
 
 type PairInfo struct {
-	Name                 string  `json:"name"`
-	MarketStatus         string  `json:"market_status"`
-	BaseUnit             string  `json:"base_unit"`
-	BaseUnitPrecision    int     `json:"base_unit_precision"`
-	MinBaseAmount        float64 `json:"min_base_amount"`
-	QuoteUnit            string  `json:"quote_unit"`
-	QuoteUnitPrecision   int     `json:"quote_unit_precision"`
-	MinQuoteAmount       float64 `json:"min_quote_amount"`
+	Name                 string
+    StepSize             float64 // Binance
+	MarketStatus         string
+	BaseUnit             string
+	BaseUnitPrecision    int
+	MinBaseAmount        float64
+	QuoteUnit            string
+	QuoteUnitPrecision   int
+	MinQuoteAmount       float64
 }
 
 

@@ -20,11 +20,16 @@ func setupDepthData(data *api.WsDepth, mapStore *sync.Map) {
 }
 
 func setBalanceData(balances *[]api.WsUserAccountBalance, mapStore *sync.Map) {
-    // switch balance.Currency {
-        // for _, _ := range (*balances) {
-        //
-        // }
-    // }
+    for _, balance := range (*balances) {
+        switch balance.Currency {
+        case "BTC":
+            (*mapStore).Store(cycles.BTC, balance)
+        case "USDT":
+            (*mapStore).Store(cycles.USDT, balance)
+        case "ADA":
+            (*mapStore).Store(cycles.ADA, balance)
+        }
+    }
 }
 
 func setUserOrderData(userOrders *[]api.WsUserOrder, mapStore *sync.Map) {
@@ -32,7 +37,23 @@ func setUserOrderData(userOrders *[]api.WsUserOrder, mapStore *sync.Map) {
         mapStore.Swap(userOrder.ID, userOrder)
     }
 }
+func getAllCurrencyToCheck() map[string] api.Side {
+    return map[string] api.Side {
+        // cycles.BTC,
+        cycles.USDT: api.BUY, // BTCUSDT buy back to BTC
+        cycles.ADA: api.SELL, // ADABTC sell back to ADA
+    }
+}
+
+func getBtcQuotePair(currency string) string {
+    if currency == cycles.USDT {
+        return "BTCUSDT"
+    }
+    // currency = ADA
+    // return ADABTC
+    return currency + "BTC"
+}
 
 func convertPairName(name string) string {
-    return ""
+    return name
 }

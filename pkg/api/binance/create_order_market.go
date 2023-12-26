@@ -2,7 +2,6 @@ package binance
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	"github.com/Newt6611/tradevago/pkg/api"
@@ -10,20 +9,25 @@ import (
 )
 
 func (this *Binance) CreateOrderMarket(ctx context.Context, side api.Side, pair string, baseAmount float64, quoteAmount float64) (api.Order, error) {
-    fmt.Println("binance create market order not implment yet")
-
-    binanceSide := b.SideTypeBuy
-    qty := quoteAmount
-    if side == api.SELL {
-        binanceSide = b.SideTypeSell
-        qty = baseAmount
-    }
-    this.binanceClient.NewCreateOrderService().
+    orderService := this.binanceClient.NewCreateOrderService().
         NewOrderRespType(b.NewOrderRespTypeACK).
-        Type(b.OrderTypeMarket).
-        Side(binanceSide).
-        QuoteOrderQty(strconv.FormatFloat(qty, 'f', -1, 64)).
-        Do(ctx)
+        Symbol(pair).
+        Type(b.OrderTypeMarket)
 
-    return api.Order{}, nil
+    if side == api.BUY {
+        orderService.QuoteOrderQty(strconv.FormatFloat(quoteAmount, 'f', -1, 32)).Side(b.SideTypeBuy)
+    } else {
+        orderService.Quantity(strconv.FormatFloat(baseAmount, 'f', -1, 32)).Side(b.SideTypeSell)
+    }
+
+    order, err := orderService.Do(ctx)
+
+    if err != nil {
+        return api.Order{}, err
+    }
+
+    return api.Order {
+        Id: strconv.FormatInt(order.OrderID, 10),
+        OrderStatus: getOrderStatus(string(order.Status)),
+    }, nil
 }

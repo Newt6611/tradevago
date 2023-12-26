@@ -26,6 +26,6 @@ func GetPairs() []string {
 func GetCycles() []tri.Cycle {
     return []tri.Cycle {
         NewAdaUsdt(),
-        NewUsdtAda(),
+        // NewUsdtAda(),
     }
 }

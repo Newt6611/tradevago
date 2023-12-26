@@ -2,7 +2,6 @@ package tri
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 
@@ -29,7 +28,6 @@ func (this *TradingPairInfoHandler) Handle(ctx context.Context, convertPairInfoN
         datas, err := this.apiClient.NewPairInfoService().Do(ctx)
         if err != nil {
             // TODO: notify message
-            fmt.Println(err)
             continue
         }
 

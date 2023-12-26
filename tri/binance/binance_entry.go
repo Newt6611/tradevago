@@ -34,7 +34,6 @@ func StartBinanceTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 
 	userOrderhandler := tri.NewUserOrderHandler(apiws, notifyHandler)
 	go userOrderhandler.Handle(ctx, setUserOrderData)
-    go userOrderhandler.DeleteCompletedOrder()
 	defer userOrderhandler.Stop()
 
 	time.Sleep(time.Millisecond * 100)
@@ -42,22 +41,26 @@ func StartBinanceTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 	pairInfoHandler := tri.NewTradingPairInfoHandler(api)
 	go pairInfoHandler.Handle(ctx, convertPairName)
 
-	// tradeEngine := tri.NewTradeEngine(api, depthHandler, pairInfoHandler, balanceHandler, notifyHandler, userOrderhandler)
-	// isTrading := false
+	tradeEngine := tri.NewTradeEngine(api, depthHandler, pairInfoHandler, balanceHandler, notifyHandler, userOrderhandler)
+	isTrading := false
 	//-------------------------------//
-	// go notifyHandler.HandleMessage(notifierCmds(balanceHandler))
+    go userOrderhandler.DeleteCompletedOrder(&isTrading)
 
 	ticker := time.NewTicker(time.Millisecond * 500)
 	cycless := cycles.GetCycles()
-    time.Sleep(time.Second * 2)
-	// for {
-	// 	if balanceHandler.IsReady(cycles.BTC) {
-	// 		break
-	// 	}
-	// }
-	// fmt.Println("balance handler ready")
-	// go tradeEngine.TradeEnd(ctx, &isTrading, getAllCurrencyToCheck, getTwdQuotePair)
-	// notifyHandler.MsgChan <- "開始運作"
+
+	for !depthHandler.IsReady() {}
+    fmt.Println("Depth Handler Ready")
+
+	for !balanceHandler.IsReady(cycles.BTC) {}
+    fmt.Println("Balance Handlder Ready")
+
+    for !pairInfoHandler.IsReady() {}
+    fmt.Println("PairInfo Handlder Ready")
+
+	go tradeEngine.TradeEnd(ctx, &isTrading, getAllCurrencyToCheck, getBtcQuotePair)
+	notifyHandler.SendMsg("開始運作")
+
 	for {
 		tri.ClearScreen()
 		for _, cycle := range cycless {
@@ -69,29 +72,32 @@ func StartBinanceTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 
 			startTime := time.Now()
 			rate, maxOrderAmount := tri.CycleHandler(api, depthHandler, cycle)
-			if rate > 1.017 {
-				// currentTwdBalance := balanceHandler.Get(cycles.TWD).Balance
-				//
-				// if currentTwdBalance <= 0 || currentTwdBalance < 800 {
-				// 	notifyHandler.MsgChan <- fmt.Sprintf("TWD 餘額不足(800), %f", currentTwdBalance)
-				// 	continue
-				// }
+			// if rate > 1.02 {
+				currentBtcBalance := balanceHandler.Get(cycles.BTC).Balance
 
-				// initMaxOrderAmount := maxOrderAmount
-				//
-				// if currentTwdBalance < maxOrderAmount {
-				// 	maxOrderAmount = currentTwdBalance
-				// }
+                // TODO: 800
+				if currentBtcBalance <= 0 || currentBtcBalance < 0.0022 {
+					notifyHandler.SendMsg(fmt.Sprintf("BTC 餘額不足(0.0022), %f", currentBtcBalance))
+					continue
+				}
+
+				initMaxOrderAmount := maxOrderAmount
+
+				if currentBtcBalance < maxOrderAmount {
+					maxOrderAmount = currentBtcBalance
+				}
 
 				// 開始交易
-				// isTrading = true
-				// tradeEngine.StartTrade(ctx, cycle, maxOrderAmount, initMaxOrderAmount, rate)
-				// isTrading = false
-			}
+				isTrading = true
+				tradeEngine.StartTrade(ctx, cycle, maxOrderAmount, initMaxOrderAmount, rate)
+				isTrading = false
+			// }
 			fmt.Printf("[%s] rate: %v, maxOrderAmount: %v, %v\n", cycle.GetName(), rate, maxOrderAmount, time.Since(startTime))
+            break
 		}
+        break
 		<-ticker.C
 	}
-	fmt.Println("done")
-	time.Sleep(time.Second * 5)
+    fmt.Println("done")
+	time.Sleep(time.Second * 100)
 }

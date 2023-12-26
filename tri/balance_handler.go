@@ -45,7 +45,13 @@ func (this *BalanceHandler) IsReady(currency string) bool {
 }
 
 func (this *BalanceHandler) Get(currency string) api.WsUserAccountBalance {
-    value, _ := this.balances.Load(currency)
+    value, ok := this.balances.Load(currency)
+    if !ok {
+        return api.WsUserAccountBalance {
+            Currency: currency,
+            Balance: 0,
+        }
+    }
     return value.(api.WsUserAccountBalance)
 }
 

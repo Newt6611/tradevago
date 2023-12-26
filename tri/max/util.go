@@ -8,31 +8,31 @@ import (
 	"github.com/Newt6611/tradevago/tri/max/cycles"
 )
 
-func getAllCurrencyToCheck() []string {
-    return []string {
-        cycles.USDT,
-        cycles.BTC,
-        cycles.ETH,
-        cycles.LTC,
-        cycles.BCH,
-        cycles.XRP,
-        cycles.BCNT,
-        cycles.USDC,
-        cycles.LINK,
-        cycles.COMP,
-        cycles.DOGE,
-        cycles.ADA,
-        cycles.DOT,
-        cycles.MATIC,
-        cycles.SOL,
-        cycles.SHIB,
-        cycles.SAND,
-        cycles.RLY,
-        cycles.LOOT,
-        cycles.APE,
-        cycles.BNB,
-        cycles.ETC,
-        cycles.ARB,
+func getAllCurrencyToCheck() map[string] api.Side {
+    return map[string] api.Side {
+        cycles.USDT: api.SELL, // usdttwd sell back to twd
+        cycles.BTC: api.SELL,
+        cycles.ETH: api.SELL,
+        cycles.LTC: api.SELL,
+        cycles.BCH: api.SELL,
+        cycles.XRP: api.SELL,
+        cycles.BCNT: api.SELL,
+        cycles.USDC: api.SELL,
+        cycles.LINK: api.SELL,
+        cycles.COMP: api.SELL,
+        cycles.DOGE: api.SELL,
+        cycles.ADA: api.SELL,
+        cycles.DOT: api.SELL,
+        cycles.MATIC: api.SELL,
+        cycles.SOL: api.SELL,
+        cycles.SHIB: api.SELL,
+        cycles.SAND: api.SELL,
+        cycles.RLY: api.SELL,
+        cycles.LOOT: api.SELL,
+        cycles.APE: api.SELL,
+        cycles.BNB: api.SELL,
+        cycles.ETC: api.SELL,
+        cycles.ARB: api.SELL,
     }
 }
 
@@ -226,6 +226,7 @@ func setBalanceData(balances *[]api.WsUserAccountBalance, mapStore *sync.Map) {
 
 
 func convertPairName(name string) string {
+    // MAX/TWD -> maxtwd
     name = strings.ToLower(name)
     names := strings.Split(name, "/")
     var sb = strings.Builder{}

@@ -1,9 +1,6 @@
-package main
+package binance
 
 import (
-	"context"
-	"fmt"
-	"os"
 
 	"github.com/Newt6611/tradevago/pkg/api"
 	"github.com/Newt6611/tradevago/pkg/api/binance"
@@ -12,16 +9,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func init() {
-	workingDir, _ := os.Getwd()
-	viper.SetConfigFile(workingDir + "/config.yaml")
-	if err := viper.ReadInConfig(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-}
-
-func main() {
+func EntryPoint() {
 	tgToken := viper.GetString("TELEGRAM.BINANCE.TOKEN")
 	tgChannelId := viper.GetInt64("TELEGRAM.BINANCE.CHANNEL_ID")
 	bot := telegram.NewTelegramClient(tgToken, tgChannelId)
@@ -37,13 +25,6 @@ func main() {
 
 	wsclient := binance.NewBinanceWs(apiKey, apiSecret)
 	apiws := api.NewWsApi(wsclient)
-
-    datas, _ := wsclient.RunUserOrderConsumer(context.Background())
-    for {
-        data := <- datas
-
-        fmt.Println(data)
-    }
 
     tri.StartBinanceTri(apiClient, apiws, bot)
 }
