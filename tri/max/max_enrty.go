@@ -89,7 +89,7 @@ func StartMaxTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 
 				// 開始交易
 				isTrading = true
-				tradeEngine.StartTrade(ctx, cycle, maxOrderAmount, initMaxOrderAmount, rate)
+				tradeEngine.StartTrade(ctx, cycle, maxOrderAmount, initMaxOrderAmount, currentTwdBalance, rate)
 				isTrading = false
 			}
 			fmt.Printf("[%s] rate: %v, maxOrderAmount: %v, %v\n", cycle.GetName(), rate, maxOrderAmount, time.Since(startTime))

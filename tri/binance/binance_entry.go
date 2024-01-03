@@ -11,6 +11,7 @@ import (
 	"github.com/Newt6611/tradevago/tri/binance/cycles"
 )
 
+// TODO: Fix NOTIONAL filter
 
 func StartBinanceTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 	ctx := context.Background()
@@ -43,11 +44,11 @@ func StartBinanceTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 
 	tradeEngine := tri.NewTradeEngine(api, depthHandler, pairInfoHandler, balanceHandler, notifyHandler, userOrderhandler)
 	isTrading := false
+	go notifyHandler.HandleMessage(notifierCmds(balanceHandler))
 	//-------------------------------//
     go userOrderhandler.DeleteCompletedOrder(&isTrading)
 
 	ticker := time.NewTicker(time.Millisecond * 500)
-	cycless := cycles.GetCycles()
 
 	for !depthHandler.IsReady() {}
     fmt.Println("Depth Handler Ready")
@@ -61,23 +62,27 @@ func StartBinanceTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 	go tradeEngine.TradeEnd(ctx, &isTrading, getAllCurrencyToCheck, getBtcQuotePair)
 	notifyHandler.SendMsg("開始運作")
 
+
+	cycless := cycles.GetCycles()
+
 	for {
 		tri.ClearScreen()
 		for _, cycle := range cycless {
-			// maxAmount := balanceHandler.Get(cycles.MAX).Balance
-			// if maxAmount < 50 {
-			// 	notifyHandler.MsgChan <- fmt.Sprintf("MAX幣少於 50, 請趕快補充 %f", maxAmount)
-			// 	continue
-			// }
+			bnbAmount := balanceHandler.Get(cycles.BNB).Balance
+            if bnbAmount < 0.0064 { // ~= 58.71488TWD, Price: 9,174.2TWD
+				notifyHandler.SendMsg(fmt.Sprintf("BNB幣少於 0.0064, 請趕快補充 %f", bnbAmount))
+				continue
+			}
 
 			startTime := time.Now()
 			rate, maxOrderAmount := tri.CycleHandler(api, depthHandler, cycle)
-			// if rate > 1.02 {
+            if false {
+			// if rate > 1.003 {
 				currentBtcBalance := balanceHandler.Get(cycles.BTC).Balance
 
-                // TODO: 800
-				if currentBtcBalance <= 0 || currentBtcBalance < 0.0022 {
-					notifyHandler.SendMsg(fmt.Sprintf("BTC 餘額不足(0.0022), %f", currentBtcBalance))
+                // 0.0009BTC ~= 1179.7452TWD, Price: 1,311,546TWD
+				if currentBtcBalance <= 0 || currentBtcBalance < 0.0009 {
+					notifyHandler.SendMsg(fmt.Sprintf("BTC 餘額不足(0.0009), %f", currentBtcBalance))
 					continue
 				}
 
@@ -89,15 +94,11 @@ func StartBinanceTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 
 				// 開始交易
 				isTrading = true
-				tradeEngine.StartTrade(ctx, cycle, maxOrderAmount, initMaxOrderAmount, rate)
+				tradeEngine.StartTrade(ctx, cycle, maxOrderAmount, initMaxOrderAmount, currentBtcBalance, rate)
 				isTrading = false
-			// }
+			}
 			fmt.Printf("[%s] rate: %v, maxOrderAmount: %v, %v\n", cycle.GetName(), rate, maxOrderAmount, time.Since(startTime))
-            break
 		}
-        break
 		<-ticker.C
 	}
-    fmt.Println("done")
-	time.Sleep(time.Second * 100)
 }

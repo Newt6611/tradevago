@@ -8,15 +8,7 @@ import (
 )
 
 func setupDepthData(data *api.WsDepth, mapStore *sync.Map) {
-    switch data.Pair {
-    case cycles.BTCUSDT:
-        (*mapStore).Store(cycles.BTCUSDT, *data)
-
-    case cycles.ADABTC:
-        (*mapStore).Store(cycles.ADABTC, *data)
-    case cycles.ADAUSDT:
-        (*mapStore).Store(cycles.ADAUSDT, *data)
-    }
+    (*mapStore).Store(data.Pair, *data)
 }
 
 func setBalanceData(balances *[]api.WsUserAccountBalance, mapStore *sync.Map) {
@@ -24,10 +16,24 @@ func setBalanceData(balances *[]api.WsUserAccountBalance, mapStore *sync.Map) {
         switch balance.Currency {
         case "BTC":
             (*mapStore).Store(cycles.BTC, balance)
+        case "BNB":
+            (*mapStore).Store(cycles.BNB, balance)
         case "USDT":
             (*mapStore).Store(cycles.USDT, balance)
         case "ADA":
             (*mapStore).Store(cycles.ADA, balance)
+        case "ACA":
+            (*mapStore).Store(cycles.ACA, balance)
+        case "AAVE":
+            (*mapStore).Store(cycles.AAVE, balance)
+        case "ACH":
+            (*mapStore).Store(cycles.ACH, balance)
+        case "OP":
+            (*mapStore).Store(cycles.OP, balance)
+        case "EOS":
+            (*mapStore).Store(cycles.EOS, balance)
+        case "FIL":
+            (*mapStore).Store(cycles.FIL, balance)
         }
     }
 }
@@ -39,9 +45,15 @@ func setUserOrderData(userOrders *[]api.WsUserOrder, mapStore *sync.Map) {
 }
 func getAllCurrencyToCheck() map[string] api.Side {
     return map[string] api.Side {
-        // cycles.BTC,
+        // cycles.BTC, BNB
         cycles.USDT: api.BUY, // BTCUSDT buy back to BTC
         cycles.ADA: api.SELL, // ADABTC sell back to ADA
+        cycles.ACA: api.SELL,
+        cycles.AAVE: api.SELL,
+        cycles.ACH: api.SELL,
+        cycles.OP: api.SELL,
+        cycles.EOS: api.SELL,
+        cycles.FIL: api.SELL,
     }
 }
 

@@ -35,7 +35,7 @@ func NewTradeEngine(apiClient *api.Api,
 	}
 }
 
-func (this *TradeEngine) StartTrade(ctx context.Context, cycle Cycle, startAmount float64, maxStartAmount float64, rate float64) {
+func (this *TradeEngine) StartTrade(ctx context.Context, cycle Cycle, startAmount float64, maxStartAmount float64, currentHoldBalance float64, rate float64) {
 	startTime := time.Now()
 
 	symbolToCheck := cycle.GetSymbolsToCheck()
@@ -47,9 +47,10 @@ func (this *TradeEngine) StartTrade(ctx context.Context, cycle Cycle, startAmoun
     for i := 0; i < 3; i++ {
         amount := startAmount
         if i > 0 {
-            if sides[i - 1] == api.BUY {
+            switch sides[i - 1] {
+            case api.BUY:
                 amount = baseAmount
-            } else if sides[i - 1] == api.SELL {
+            case api.SELL:
                 amount = quoteAmount
             }
         }
@@ -62,15 +63,14 @@ func (this *TradeEngine) StartTrade(ctx context.Context, cycle Cycle, startAmoun
         }
     }
 
-    this.notifyHandler.SendMsg(fmt.Sprintf("%s [開始交易 %s], 初始金額 %f, 最大金額 %f, rate: %f",
-        cycle.GetName(), symbols[0], startAmount, maxStartAmount, rate))
+    this.notifyHandler.SendMsg(fmt.Sprintf("%s [開始交易 %s], 初始金額 %f, 最大金額 %f, rate: %f, 目前餘額: %f",
+        cycle.GetName(), symbols[0], startAmount, maxStartAmount, rate, currentHoldBalance))
 
     for i := 0; i < 3; i++ {
         if i > 0 { // 第一 round 不執行
             startAmount = this.waitToGetBalanceAmount(ctx, symbolToCheck[i], symbols[i], sides[i])
         }
         quoteAmount, baseAmount = this.updateQuoteBaseAmount(symbols[i], startAmount, sides[i])
-        fmt.Println(quoteAmount, baseAmount)
 trade:
         this.notifyHandler.SendMsg(fmt.Sprintf("[開始交易 %s] %d", symbols[i], i + 1))
 
@@ -96,11 +96,12 @@ trade:
 func (this *TradeEngine) waitToGetBalanceAmount(ctx context.Context, symbolToCheck string, pair string, side api.Side) float64 {
 	pairInfo := this.tradingPairInfoHandler.Get(pair)
 	var amountToCheck float64
-	if side == api.BUY {
+    switch side {
+    case api.BUY:
 		amountToCheck = pairInfo.MinQuoteAmount
-	} else if side == api.SELL {
+    case api.SELL:
 		amountToCheck = pairInfo.MinBaseAmount
-	}
+    }
 
 	for { // 一直等到能抓到最新的錢
 		accountBalance := this.balanceHandler.Get(symbolToCheck)
