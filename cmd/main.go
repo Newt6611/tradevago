@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/Newt6611/tradevago/cmd/binance"
+	"github.com/Newt6611/tradevago/cmd/bito"
 	"github.com/Newt6611/tradevago/cmd/max"
 	"github.com/spf13/viper"
 )
@@ -12,6 +13,7 @@ import (
 const (
     Max     string = "max"
     Binance string = "binance"
+    Bito    string = "bito"
 )
 
 func main() {
@@ -32,6 +34,8 @@ func main() {
         max.EntryPoint()
     case Binance:
         binance.EntryPoint()
+    case Bito:
+        bito.EntryPoint()
     default:
         fmt.Printf("Unable to match any platform with %s\n", platform)
     }

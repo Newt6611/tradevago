@@ -66,8 +66,8 @@ func StartMaxTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 		tri.ClearScreen()
 		for _, cycle := range cycless {
 			maxAmount := balanceHandler.Get(cycles.MAX).Balance
-			if maxAmount < 50 {
-				notifyHandler.SendMsg(fmt.Sprintf("MAX幣少於 50, 請趕快補充 %f", maxAmount))
+			if maxAmount < 10 {
+				notifyHandler.SendMsg(fmt.Sprintf("MAX幣少於 10, 請趕快補充 %f", maxAmount))
 				continue
 			}
 

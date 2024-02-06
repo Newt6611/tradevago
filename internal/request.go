@@ -8,7 +8,6 @@ import (
 	"net/url"
 )
 
-// TODO: with header
 func Get(ctx context.Context, requestUrl string, query url.Values, headers map[string]string) (b []byte, err error){
     req, err := http.NewRequest(http.MethodGet, requestUrl, nil)
     if err != nil {

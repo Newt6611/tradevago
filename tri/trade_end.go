@@ -23,14 +23,15 @@ func (this *TradeEngine) TradeEnd(ctx context.Context, isTrading *bool, currency
 
             quoteAmount, baseAmount := this.updateQuoteBaseAmount(pair, balance, side)
 
-
             if quoteAmount > pairInfo.MinQuoteAmount || baseAmount > pairInfo.MinBaseAmount {
+                fmt.Println(balance)
                 fmt.Printf("Symbol: %s\n", pair)
                 fmt.Printf("Side: %v", side)
                 fmt.Printf("MinQuoteAmount: %f\n", pairInfo.MinQuoteAmount)
                 fmt.Printf("MinBaseAmount: %f\n", pairInfo.MinBaseAmount)
                 fmt.Printf("quoteAmount: %f\n", quoteAmount)
                 fmt.Printf("baseAmount: %f\n", baseAmount)
+                fmt.Printf("==============\n")
                 _, err := this.createOrder(ctx, pair, side, baseAmount, quoteAmount)
                 if err != nil {
                     this.notifyHandler.SendMsg(fmt.Sprintf("賣餘幣時發生錯誤 %s", err.Error()))

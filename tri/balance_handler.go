@@ -2,6 +2,7 @@ package tri
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/Newt6611/tradevago/pkg/api"
@@ -31,7 +32,7 @@ ws:
     for {
         userAccountData := <-userAccountChan
         if userAccountData.Err != nil {
-            // this.notifyHandler.MsgChan <- fmt.Sprintf("[BalanceHandler] %s", userAccountData.Err.Error())
+            this.notifyHandler.SendMsg(fmt.Sprintf("[BalanceHandler] %s", userAccountData.Err.Error()))
             close(this.c)
             goto ws
         }

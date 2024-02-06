@@ -15,11 +15,11 @@ type apiErrorDetails struct {
 }
 
 type Max struct {
-    apiKey      string
-    apiSecret   string
-    takerFee    float64
-    makerFee    float64
-    maxapi      m.API
+	maxapi    m.API
+	apiKey    string
+	apiSecret string
+	takerFee  float64
+	makerFee  float64
 }
 
 func NewMaxClient(apiKey string, apiSecret string, takerFee float64, makerFee float64) *Max {

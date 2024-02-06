@@ -2,7 +2,6 @@ package max
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -25,8 +24,6 @@ func EntryPoint() {
         tgToken := viper.GetString("TELEGRAM.MAX.TOKEN")
         tgChannelId := viper.GetInt64("TELEGRAM.MAX.CHANNEL_ID")
         bot = telegram.NewTelegramClient(tgToken, tgChannelId)
-        fmt.Println(tgToken)
-        fmt.Println(tgChannelId)
 
         // Setup Max Api key Secret key
         apiKey := viper.GetString("MAX.API_KEY")

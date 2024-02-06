@@ -2,6 +2,7 @@ package tri
 
 import (
 	"context"
+	"fmt"
 	"math"
 	"sync"
 
@@ -33,7 +34,7 @@ ws:
     for {
         depthData := <- depthDataChan
         if depthData.Err != nil {
-            // this.notifyHandler.MsgChan <- fmt.Sprintf("[DepthHandler]: %s", depthData.Err.Error())
+            this.notifyHandler.SendMsg(fmt.Sprintf("[DepthHandler]: %s", depthData.Err.Error()))
             close(this.c)
             goto ws
         }
@@ -44,7 +45,7 @@ ws:
 
 func (this *DepthHandler) IsReady() bool {
     length := 0
-    this.depthTable.Range(func(key, value any) bool {
+    this.depthTable.Range(func(_, value any) bool {
         length += 1
         return true
     })
