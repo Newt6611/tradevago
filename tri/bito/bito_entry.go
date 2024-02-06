@@ -102,4 +102,6 @@ func StartBitoTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
         }
         <-ticker.C
     }
+
+    time.Sleep(time.Second * 30)
 }

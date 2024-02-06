@@ -48,7 +48,7 @@ func mapTradingInfo(tradingPairInfos *tradingPairInfos) (infos []api.PairInfo) {
     for _, data := range tradingPairInfos.Data {
         baseUnitPrecision, _ := strconv.Atoi(data.BasePrecision)
         minBaseAmount, _ := strconv.ParseFloat(data.MinLimitBaseAmount, 64)
-        quoteUnitPrecision, _ := strconv.Atoi(data.QuotePrecision)
+        quoteUnitPrecision, _ := strconv.Atoi(data.AmountPrecision)
         minQuoteAmount, _ := strconv.ParseFloat(data.MinMarketBuyQuoteAmount, 64)
 
         infos = append(infos, api.PairInfo {
