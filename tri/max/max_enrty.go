@@ -73,7 +73,7 @@ func StartMaxTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 
 			startTime := time.Now()
 			rate, maxOrderAmount := tri.CycleHandler(api, depthHandler, cycle)
-			if rate > 1.02 {
+			if rate > 1.0001 {
 				currentTwdBalance := balanceHandler.Get(cycles.TWD).Balance
 
 				if currentTwdBalance <= 0 || currentTwdBalance < 800 {
