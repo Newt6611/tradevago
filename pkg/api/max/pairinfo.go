@@ -47,6 +47,7 @@ func mapPairInfo(res []pairInfo) []api.PairInfo {
             QuoteUnit: data.QuoteUnit,
             QuoteUnitPrecision: data.QuoteUnitPrecision,
             MinQuoteAmount: data.MinQuoteAmount,
+            Binance: false,
         })
     }
     return pairinfos
