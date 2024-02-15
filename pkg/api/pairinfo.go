@@ -3,21 +3,15 @@ package api
 import "context"
 
 type PairInfo struct {
-	Name               string
-	MarketStatus       string
-	BaseUnit           string
-	QuoteUnit          string
-	QuoteUnitPrecision int
-	MinBaseAmount      float64
-	BaseUnitPrecision  int
-	MinQuoteAmount     float64
-
-	Binance            bool
-	ApplyMaxToMarket   bool
-	ApplyMinToMarket   bool
-	MaxNotional        float64
-	MinNotional        float64
-	StepSize           float64
+	Name                 string
+    StepSize             float64 // Binance
+	MarketStatus         string
+	BaseUnit             string
+	BaseUnitPrecision    int
+	MinBaseAmount        float64
+	QuoteUnit            string
+	QuoteUnitPrecision   int
+	MinQuoteAmount       float64
 }
 
 

@@ -1,5 +1,6 @@
 package cycles
 
+
 import (
 	"github.com/Newt6611/tradevago/pkg/api"
 	_ "github.com/Newt6611/tradevago/tri"
