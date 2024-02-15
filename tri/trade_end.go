@@ -21,10 +21,11 @@ func (this *TradeEngine) TradeEnd(ctx context.Context, isTrading *bool, currency
 			pairInfo := this.tradingPairInfoHandler.Get(pair)
 			balance := this.balanceHandler.Get(currency).Balance
 
-            quoteAmount, baseAmount := this.updateQuoteBaseAmount(pair, balance, side)
+            quoteAmount, baseAmount, trade := this.updateQuoteBaseAmount(pair, balance, side)
 
-            if quoteAmount > pairInfo.MinQuoteAmount || baseAmount > pairInfo.MinBaseAmount {
+            if (quoteAmount > pairInfo.MinQuoteAmount || baseAmount > pairInfo.MinBaseAmount) && trade {
                 fmt.Println(balance)
+                fmt.Println(trade)
                 fmt.Printf("Symbol: %s\n", pair)
                 fmt.Printf("Side: %v", side)
                 fmt.Printf("MinQuoteAmount: %f\n", pairInfo.MinQuoteAmount)
