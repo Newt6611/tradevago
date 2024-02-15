@@ -76,7 +76,8 @@ func StartBinanceTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 
 			startTime := time.Now()
 			rate, maxOrderAmount := tri.CycleHandler(api, depthHandler, cycle)
-			if rate > 1.003 {
+            if false {
+			// if rate > 1.003 {
 				currentBtcBalance := balanceHandler.Get(cycles.BTC).Balance
 
                 // 0.0009BTC ~= 1179.7452TWD, Price: 1,311,546TWD
