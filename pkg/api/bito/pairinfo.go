@@ -59,7 +59,6 @@ func mapTradingInfo(tradingPairInfos *tradingPairInfos) (infos []api.PairInfo) {
             QuoteUnit: data.Quote,
             QuoteUnitPrecision: quoteUnitPrecision,
             MinQuoteAmount: minQuoteAmount,
-            Binance: false,
         })
     }
     return infos

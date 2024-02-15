@@ -10,10 +10,6 @@ import (
 	"github.com/Newt6611/tradevago/pkg/api"
 )
 
-const (
-    OrderWaitTime time.Duration = time.Minute * 5
-)
-
 type TradeEngine struct {
 	apiClient              *api.Api
 	depthHandler           *DepthHandler
@@ -40,6 +36,8 @@ func NewTradeEngine(apiClient *api.Api,
 }
 
 func (this *TradeEngine) StartTrade(ctx context.Context, cycle Cycle, startAmount float64, maxStartAmount float64, currentHoldBalance float64, rate float64) {
+	startTime := time.Now()
+
 	symbolToCheck := cycle.GetSymbolsToCheck()
 	symbols := cycle.GetSymbols()
 	sides := cycle.GetSides()
@@ -56,11 +54,7 @@ func (this *TradeEngine) StartTrade(ctx context.Context, cycle Cycle, startAmoun
                 amount = quoteAmount
             }
         }
-
-        quoteAmount, baseAmount, _ := this.updateQuoteBaseAmount(symbols[i], amount, sides[i])
-        // if !trade {
-        //     return
-        // }
+        quoteAmount, baseAmount = this.updateQuoteBaseAmount(symbols[i], amount, sides[i])
 
         limitBuyQuote, limitSellBase := this.getLimitBuySellQty(symbols[i])
 
@@ -69,8 +63,6 @@ func (this *TradeEngine) StartTrade(ctx context.Context, cycle Cycle, startAmoun
         }
     }
 
-	startTime := time.Now()
-
     this.notifyHandler.SendMsg(fmt.Sprintf("%s [開始交易 %s], 初始金額 %f, 最大金額 %f, rate: %f, 目前餘額: %f",
         cycle.GetName(), symbols[0], startAmount, maxStartAmount, rate, currentHoldBalance))
 
@@ -78,10 +70,7 @@ func (this *TradeEngine) StartTrade(ctx context.Context, cycle Cycle, startAmoun
         if i > 0 { // 第一 round 不執行
             startAmount = this.waitToGetBalanceAmount(ctx, symbolToCheck[i], symbols[i], sides[i])
         }
-        quoteAmount, baseAmount, _ := this.updateQuoteBaseAmount(symbols[i], startAmount, sides[i])
-        // if !trade {
-        //     return
-        // }
+        quoteAmount, baseAmount = this.updateQuoteBaseAmount(symbols[i], startAmount, sides[i])
 trade:
         this.notifyHandler.SendMsg(fmt.Sprintf("[開始交易 %s] %d", symbols[i], i + 1))
 
@@ -97,11 +86,7 @@ trade:
             return
         }
 
-        processToLong := this.waitToGetCertainOrderDone(order.Id, startTime)
-        if processToLong != nil {
-            this.notifyHandler.SendMsg(processToLong.Error())
-            return
-        }
+        this.waitToGetCertainOrderDone(order.Id)
         this.notifyHandler.SendMsg(fmt.Sprintf("第 %d 單完成", i + 1))
     }
 
@@ -135,45 +120,44 @@ func (this *TradeEngine) createOrder(ctx context.Context, symbol string, side ap
 		Do(ctx)
 }
 
-func (this *TradeEngine) updateQuoteBaseAmount(symbol string, amount float64, side api.Side) (float64, float64, bool) {
+func (this *TradeEngine) updateQuoteBaseAmount(symbol string, amount float64, side api.Side) (float64, float64) {
     quotePrecision, basePrecision := this.getQuoteBasePrecisions(symbol)
     askPrice, bidPrice := this.getAskBidPrice(symbol)
-    trade := true
+    stepSize := this.getStepSize(symbol)
 
     var quoteAmount, baseAmount float64
-    if side == api.BUY {
+    switch side {
+    case api.BUY:
         quoteAmount = roundToDecimalPlaces(amount, quotePrecision)
         baseAmount = roundToDecimalPlaces(quoteAmount / askPrice, basePrecision)
-    } else {
+    case api.SELL:
         baseAmount = roundToDecimalPlaces(amount, basePrecision)
         quoteAmount = roundToDecimalPlaces(baseAmount * bidPrice, quotePrecision)
     }
-
-    // apply binance filter
-    isBinance := this.tradingPairInfoHandler.Get(symbol).Binance
-    if isBinance {
-        quoteAmount, baseAmount, trade = this.applyBinanceFilter(symbol, side, quoteAmount, baseAmount)
+    if stepSize > 0 {
+        // quoteAmount = applyStepSize(quoteAmount, stepSize)
+        baseAmount = applyStepSize(baseAmount, stepSize)
     }
-    return quoteAmount, baseAmount, trade
+    return quoteAmount, baseAmount
 }
 
-func (this *TradeEngine) waitToGetCertainOrderDone(orderId string, startTime time.Time) error {
+func (this *TradeEngine) waitToGetCertainOrderDone(orderId string) {
 	for {
-        if time.Since(startTime) > OrderWaitTime {
-            return errors.New("訂單等待時間過長")
-        }
 		data := this.userOrderHandler.Get(orderId)
 		if data != (api.WsUserOrder{}) && data.Status == api.OrderStatusDone {
             break
 		}
 	}
-    return nil
 }
 
 func (this *TradeEngine) getQuoteBasePrecisions(symbol string) (int, int) {
 	quotePrecision := this.tradingPairInfoHandler.Get(symbol).QuoteUnitPrecision
     basePrecision := this.tradingPairInfoHandler.Get(symbol).BaseUnitPrecision
     return quotePrecision, basePrecision
+}
+
+func (this *TradeEngine) getStepSize(symbol string) float64 {
+    return this.tradingPairInfoHandler.Get(symbol).StepSize
 }
 
 func (this *TradeEngine) getLimitBuySellQty(symbol string) (float64, float64) {
@@ -188,13 +172,13 @@ func (this *TradeEngine) getAskBidPrice(symbol string) (float64, float64) {
     return askPrice, bidPrice
 }
 
-func (this *TradeEngine) applyBinanceFilter(symbol string, side api.Side, quoteAmount, baseAmount float64) (float64, float64, bool) {
-    quoteAmount, baseAmount = applyStepSizeFilter(this, symbol, quoteAmount, baseAmount)
-    trade := applyNotionalFilter(this, symbol, side, quoteAmount, baseAmount)
-    return quoteAmount, baseAmount, trade
-}
-
 func roundToDecimalPlaces(value float64, decimalPlaces int) float64 {
 	precision := math.Pow10(decimalPlaces)
 	return math.Floor(value*precision) / precision
+}
+
+func applyStepSize(value, stepsize float64) float64 {
+	nearestMultiple := math.Floor(value / stepsize)
+	result := nearestMultiple * stepsize
+	return result
 }
