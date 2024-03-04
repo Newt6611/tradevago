@@ -11,6 +11,10 @@ import (
 	"github.com/Newt6611/tradevago/tri/max/cycles"
 )
 
+const (
+    PairStartTradeTimes int = 10
+)
+
 func StartMaxTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 	ctx := context.Background()
 
@@ -42,7 +46,10 @@ func StartMaxTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 
 	tradeEngine := tri.NewTradeEngine(api, depthHandler, pairInfoHandler, balanceHandler, notifyHandler, userOrderhandler)
 	isTrading := false
-	go notifyHandler.HandleMessage(notifierCmds(balanceHandler))
+	go notifyHandler.HandleMessage(notifierCmds(balanceHandler, depthHandler))
+
+    tradeSignal := tri.NewTradeSignalHandler()
+    go tradeSignal.Clear(time.Second * 10)
 	//-------------------------------//
 
     go userOrderhandler.DeleteCompletedOrder(&isTrading)
@@ -66,18 +73,23 @@ func StartMaxTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 		tri.ClearScreen()
 		for _, cycle := range cycless {
 			maxAmount := balanceHandler.Get(cycles.MAX).Balance
-			if maxAmount < 10 {
-				notifyHandler.SendMsg(fmt.Sprintf("MAX幣少於 10, 請趕快補充 %f", maxAmount))
+			if maxAmount < 5 {
+				notifyHandler.SendMsg(fmt.Sprintf("MAX幣少於 5, 請趕快補充 %f", maxAmount))
 				continue
 			}
 
 			startTime := time.Now()
 			rate, maxOrderAmount := tri.CycleHandler(api, depthHandler, cycle)
 			if rate > 1.001 {
+                _, do := tradeSignal.StartTradeOrNot(cycle.GetName());
+                if !do {
+                    continue
+                }
+
 				currentTwdBalance := balanceHandler.Get(cycles.TWD).Balance
 
-				if currentTwdBalance <= 0 || currentTwdBalance < 800 {
-					notifyHandler.SendMsg(fmt.Sprintf("TWD 餘額不足(800), %f", currentTwdBalance))
+				if currentTwdBalance <= 0 || currentTwdBalance < 200 {
+					notifyHandler.SendMsg(fmt.Sprintf("TWD 餘額不足(200), %f", currentTwdBalance))
 					continue
 				}
 

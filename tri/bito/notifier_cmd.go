@@ -8,7 +8,7 @@ import (
 	"github.com/Newt6611/tradevago/tri/bito/cycles"
 )
 
-func notifierCmds(balanceHandler *tri.BalanceHandler) map[string]func() string {
+func notifierCmds(balanceHandler *tri.BalanceHandler, depthHandler *tri.DepthHandler) map[string]func() string {
 	return map[string]func() string{
 		"!TWD": func() string {
 			twd := balanceHandler.Get(cycles.TWD).Balance
@@ -20,8 +20,9 @@ func notifierCmds(balanceHandler *tri.BalanceHandler) map[string]func() string {
 		},
 		notify.Sticker: func() string {
 			twd := balanceHandler.Get(cycles.TWD).Balance
-			max := balanceHandler.Get(cycles.BITO).Balance
-			return fmt.Sprintf("TWD: %.8f\nBITO: %.8f", twd, max)
+			bito := balanceHandler.Get(cycles.BITO).Balance
+            bitoPrice := depthHandler.GetDepth(cycles.BITOTWD).Bids[0].Price
+			return fmt.Sprintf("TWD: %.8f\nBITO: %.8f\n(%.8f TWD)", twd, bito, bito * bitoPrice)
 		},
 	}
 }

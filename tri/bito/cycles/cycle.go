@@ -29,6 +29,8 @@ const (
 
 const (
     BTCTWD      string = "btc_twd"
+    BITOTWD     string = "bito_twd"
+
     BTCUSDT     string = "btc_usdt"
     USDTTWD     string = "usdt_twd"
     ETHTWD      string = "eth_twd"
@@ -66,6 +68,7 @@ const (
 
 func GetPairs() []string {
     return []string {
+        BITOTWD,
         BTCTWD,
         BTCUSDT,
         USDTTWD,
@@ -138,8 +141,8 @@ func GetCycles() []tri.Cycle {
         NewShibUsdt(),
         NewUsdtShib(),
 
-        NewSolUsdt(),
-        NewUsdtSol(),
+        // NewSolUsdt(),
+        // NewUsdtSol(),
 
         NewTonUsdt(),
         NewUsdtTon(),

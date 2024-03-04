@@ -11,11 +11,13 @@ var (
     ErrorBalanceNotEnougth = errors.New("Error Balance Not Enougth")
 )
 const (
-    OrderStatusWait     OrderStatus = "Wait"
-    OrderStatusDone     OrderStatus = "Done"
-    OrderStatusCancel   OrderStatus = "Cancel"
+    OrderStatusWait                 OrderStatus = "Wait"
+    OrderStatusDone                 OrderStatus = "Done"
+    OrderStatusPartial              OrderStatus = "Partial"
+    OrderStatusCompletePartial      OrderStatus = "CompletePartial" // bito
+    OrderStatusCancel               OrderStatus = "Cancel"
 
-    OrderStatusUnknow   OrderStatus = "Unknow"
+    OrderStatusUnknow               OrderStatus = "Unknow"
 )
 
 type Order struct {
@@ -27,6 +29,7 @@ type CreateOrderService struct {
     client          Client
     side            Side
     pair            string
+    price           float64
     baseAmount      float64
     quoteAmount     float64
 }
@@ -57,6 +60,11 @@ func (this *CreateOrderService) WithBaseAmount(amount float64) *CreateOrderServi
     return this
 }
 
+func (this *CreateOrderService) WithPrice(price float64) *CreateOrderService {
+    this.price = price
+    return this
+}
+
 func (this *CreateOrderService) Do(ctx context.Context) (Order, error){
-    return this.client.CreateOrderMarket(ctx, this.side, this.pair, this.baseAmount, this.quoteAmount)
+    return this.client.CreateOrderMarket(ctx, this.side, this.pair, this.price, this.baseAmount, this.quoteAmount)
 }

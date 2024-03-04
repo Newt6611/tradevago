@@ -46,6 +46,8 @@ func getTwdQuotePair(currency string) string {
 
 func setupDepthData(data *api.WsDepth, mapStore *sync.Map) {
     switch data.Pair {
+    case cycles.MAXTWD:
+        (*mapStore).Store(cycles.MAXTWD, *data)
     case cycles.USDTTWD:
         (*mapStore).Store(cycles.USDTTWD, *data)
 

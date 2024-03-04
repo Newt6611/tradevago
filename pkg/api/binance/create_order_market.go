@@ -8,7 +8,7 @@ import (
 	b "github.com/adshao/go-binance/v2"
 )
 
-func (this *Binance) CreateOrderMarket(ctx context.Context, side api.Side, pair string, baseAmount float64, quoteAmount float64) (api.Order, error) {
+func (this *Binance) CreateOrderMarket(ctx context.Context, side api.Side, pair string, price float64, baseAmount float64, quoteAmount float64) (api.Order, error) {
     orderService := this.binanceClient.NewCreateOrderService().
         NewOrderRespType(b.NewOrderRespTypeACK).
         Symbol(pair).

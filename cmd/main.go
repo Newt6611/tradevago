@@ -31,10 +31,12 @@ func main() {
 
     switch platform {
     case Max:
+        fmt.Println("start max")
         max.EntryPoint()
     case Binance:
         binance.EntryPoint()
     case Bito:
+        fmt.Println("bito")
         bito.EntryPoint()
     default:
         fmt.Printf("Unable to match any platform with %s\n", platform)

@@ -33,6 +33,7 @@ const (
 )
 
 const (
+    MAXTWD          string = "maxtwd"
     USDTTWD         string = "usdttwd"
 
     BTCTWD          string = "btctwd"
@@ -104,6 +105,7 @@ const (
 
 func GetPairs() []string {
     return []string {
+        MAXTWD,
         USDTTWD,
 
         BTCTWD,

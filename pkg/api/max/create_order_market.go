@@ -35,7 +35,7 @@ type createOrderResponse struct {
 	GroupID           *string   `json:"group_id"`
 }
 
-func (this *Max) CreateOrderMarket(ctx context.Context, side api.Side, pair string, baseAmount float64, quoteAmount float64) (api.Order, error) {
+func (this *Max) CreateOrderMarket(ctx context.Context, side api.Side, pair string, price float64, baseAmount float64, quoteAmount float64) (api.Order, error) {
     path := "/api/v2/orders"
     var maxside string
     if side == api.SELL {

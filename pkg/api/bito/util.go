@@ -22,6 +22,8 @@ func getOrderStatus(s int) api.OrderStatus {
         return api.OrderStatusDone
     case 2:
         return api.OrderStatusDone
+    case 3:
+        return api.OrderStatusDone
 
     case 4:
         return api.OrderStatusCancel

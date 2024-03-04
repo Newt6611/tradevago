@@ -10,6 +10,14 @@ import (
 	"github.com/Newt6611/tradevago/pkg/api"
 )
 
+const (
+    OrderWaitTime time.Duration = time.Minute * 5
+)
+
+var (
+    OrderWaitTooLong error = errors.New("訂單等待時間過長")
+)
+
 type TradeEngine struct {
 	apiClient              *api.Api
 	depthHandler           *DepthHandler
@@ -36,8 +44,6 @@ func NewTradeEngine(apiClient *api.Api,
 }
 
 func (this *TradeEngine) StartTrade(ctx context.Context, cycle Cycle, startAmount float64, maxStartAmount float64, currentHoldBalance float64, rate float64) {
-	startTime := time.Now()
-
 	symbolToCheck := cycle.GetSymbolsToCheck()
 	symbols := cycle.GetSymbols()
 	sides := cycle.GetSides()
@@ -63,6 +69,7 @@ func (this *TradeEngine) StartTrade(ctx context.Context, cycle Cycle, startAmoun
         }
     }
 
+	startTime := time.Now()
     this.notifyHandler.SendMsg(fmt.Sprintf("%s [開始交易 %s], 初始金額 %f, 最大金額 %f, rate: %f, 目前餘額: %f",
         cycle.GetName(), symbols[0], startAmount, maxStartAmount, rate, currentHoldBalance))
 
@@ -86,7 +93,17 @@ trade:
             return
         }
 
-        this.waitToGetCertainOrderDone(order.Id)
+        err = this.waitToGetCertainOrderDone(order.Id, startTime)
+        if err != nil {
+            this.notifyHandler.SendMsg(err.Error())
+            return
+        }
+        err = this.cancelOrder(ctx, symbols[i])
+        if err != nil {
+            this.notifyHandler.SendMsg(err.Error())
+            return
+        }
+
         this.notifyHandler.SendMsg(fmt.Sprintf("第 %d 單完成", i + 1))
     }
 
@@ -111,13 +128,24 @@ func (this *TradeEngine) waitToGetBalanceAmount(ctx context.Context, symbolToChe
 	}
 }
 
-func (this *TradeEngine) createOrder(ctx context.Context, symbol string, side api.Side, baseAmount float64, quoteAmount float64) (api.Order, error) {
+func (this *TradeEngine) createOrder(ctx context.Context, pair string, side api.Side, baseAmount float64, quoteAmount float64) (api.Order, error) {
+    var price float64
+    if side == api.SELL {
+        price = this.depthHandler.GetDepth(pair).Bids[0].Price
+    } else {
+        price = this.depthHandler.GetDepth(pair).Asks[0].Price
+    }
     return this.apiClient.NewCreateOrderMarketService().
-		WithPair(symbol).
+		WithPair(pair).
 		WithSide(side).
 		WithBaseAmount(baseAmount).
 		WithQuoteAmount(quoteAmount).
+        WithPrice(price).
 		Do(ctx)
+}
+
+func (this *TradeEngine) cancelOrder(ctx context.Context, pair string) error {
+    return this.apiClient.NewCancelAllOrderService().WithPair(pair).Do(ctx)
 }
 
 func (this *TradeEngine) updateQuoteBaseAmount(symbol string, amount float64, side api.Side) (float64, float64) {
@@ -141,13 +169,17 @@ func (this *TradeEngine) updateQuoteBaseAmount(symbol string, amount float64, si
     return quoteAmount, baseAmount
 }
 
-func (this *TradeEngine) waitToGetCertainOrderDone(orderId string) {
+func (this *TradeEngine) waitToGetCertainOrderDone(orderId string, startTime time.Time) error {
 	for {
+        if time.Since(startTime) > OrderWaitTime {
+            return OrderWaitTooLong
+        }
 		data := this.userOrderHandler.Get(orderId)
-		if data != (api.WsUserOrder{}) && data.Status == api.OrderStatusDone {
+		if data != (api.WsUserOrder{}) && (data.Status == api.OrderStatusDone || data.Status == api.OrderStatusPartial || data.Status == api.OrderStatusCompletePartial) {
             break
 		}
 	}
+    return nil
 }
 
 func (this *TradeEngine) getQuoteBasePrecisions(symbol string) (int, int) {

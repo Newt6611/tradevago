@@ -12,6 +12,10 @@ import (
 	"github.com/Newt6611/tradevago/tri/bito/cycles"
 )
 
+const (
+    PairStartTradeTimes int = 10
+)
+
 func StartBitoTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
     ctx := context.Background()
 
@@ -49,7 +53,10 @@ func StartBitoTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 
     tradeEngine := tri.NewTradeEngine(api, depthHandler, pairInfoHandler, balanceHandler, notifyHandler, userOrderhandler)
     isTrading := false
-    go notifyHandler.HandleMessage(notifierCmds(balanceHandler))
+    go notifyHandler.HandleMessage(notifierCmds(balanceHandler, depthHandler))
+
+    tradeSignal := tri.NewTradeSignalHandler()
+    go tradeSignal.Clear(time.Second * 10)
     //-------------------------------//
     go userOrderhandler.DeleteCompletedOrder(&isTrading)
 
@@ -72,7 +79,7 @@ func StartBitoTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
         tri.ClearScreen()
         for _, cycle := range cycless {
             bitoAmount := balanceHandler.Get(cycles.BITO).Balance
-            if bitoAmount < 50 {
+            if bitoAmount < 30 {
                 notifyHandler.SendMsg(fmt.Sprintf("BITO幣少於 50, 請趕快補充 %f", bitoAmount))
                 continue
             }
@@ -80,10 +87,15 @@ func StartBitoTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
             startTime := time.Now()
             rate, maxOrderAmount := tri.CycleHandler(api, depthHandler, cycle)
             if rate > 1.001 {
+                _, do := tradeSignal.StartTradeOrNot(cycle.GetName());
+                if !do {
+                    continue
+                }
+
                 currentTwdBalance := balanceHandler.Get(cycles.TWD).Balance
 
-                if currentTwdBalance <= 0 || currentTwdBalance < 800 {
-                    notifyHandler.SendMsg(fmt.Sprintf("TWD 餘額不足(800), %f", currentTwdBalance))
+                if currentTwdBalance <= 0 || currentTwdBalance < 300 {
+                    notifyHandler.SendMsg(fmt.Sprintf("TWD 餘額不足(300), %f", currentTwdBalance))
                     continue
                 }
 
@@ -102,6 +114,5 @@ func StartBitoTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
         }
         <-ticker.C
     }
-
-    time.Sleep(time.Second * 30)
+    // time.Sleep(time.Second * 30)
 }
