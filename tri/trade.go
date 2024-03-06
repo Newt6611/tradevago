@@ -11,7 +11,7 @@ import (
 )
 
 const (
-    OrderWaitTime time.Duration = time.Minute * 5
+    OrderWaitTime time.Duration = time.Minute * 1
 )
 
 var (

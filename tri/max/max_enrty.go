@@ -2,6 +2,7 @@ package max
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -74,8 +75,14 @@ func StartMaxTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 		for _, cycle := range cycless {
 			maxAmount := balanceHandler.Get(cycles.MAX).Balance
 			if maxAmount < 5 {
-				notifyHandler.SendMsg(fmt.Sprintf("MAX幣少於 5, 請趕快補充 %f", maxAmount))
-				continue
+				// notifyHandler.SendMsg(fmt.Sprintf("MAX幣少於 5, 請趕快補充 %f", maxAmount))
+				notifyHandler.SendMsg(fmt.Sprintf("開始購買 Max 幣"))
+                err := buyMaxFee(ctx, api, userOrderhandler, notifyHandler)
+                if err != nil {
+                    notifyHandler.SendMsg(err.Error())
+                    continue
+                }
+                notifyHandler.SendMsg(fmt.Sprintf("購買完畢"))
 			}
 
 			startTime := time.Now()
@@ -108,4 +115,30 @@ func StartMaxTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 		}
 		<-ticker.C
 	}
+}
+
+// 一次購買 50 MAX
+func buyMaxFee(ctx context.Context, apii *api.Api, userOrderhandler *tri.UserOrderHandler, notifyHandler *tri.NotifyHandler) error {
+    order, err := apii.NewCreateOrderMarketService().
+		WithPair(cycles.MAXTWD).
+		WithSide(api.BUY).
+		WithBaseAmount(50).
+		Do(ctx)
+    if err != nil {
+        return err
+    }
+
+    startTime := time.Now()
+    for {
+        if time.Since(startTime) > time.Minute * 1 {
+            return errors.New("購買 Max 時間等待過長")
+        }
+        o := userOrderhandler.Get(order.Id)
+        if o.Status == api.OrderStatusDone || 
+            o.Status == api.OrderStatusPartial || 
+            o.Status == api.OrderStatusCompletePartial {
+            break
+        }
+    }
+    return nil
 }
