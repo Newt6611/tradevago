@@ -141,7 +141,7 @@ func GetCycles() []tri.Cycle {
         NewShibUsdt(),
         NewUsdtShib(),
 
-        // NewSolUsdt(),
+        NewSolUsdt(),
         // NewUsdtSol(),
 
         NewTonUsdt(),
