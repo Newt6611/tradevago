@@ -9,6 +9,7 @@ import (
 	"github.com/Newt6611/tradevago/pkg/api"
 	"github.com/Newt6611/tradevago/pkg/api/max"
 	"github.com/Newt6611/tradevago/pkg/notify/telegram"
+	"github.com/Newt6611/tradevago/tri"
 	maxtri "github.com/Newt6611/tradevago/tri/max"
 	"github.com/spf13/viper"
 )
@@ -36,7 +37,13 @@ func EntryPoint() {
 
         wsclient := max.NewMaxWs(apiKey, apiSecret)
         apiws := api.NewWsApi(wsclient)
-        maxtri.StartMaxTri(apiClient, apiws, bot)
+
+        backend := &tri.Backend {
+            Api: apiClient,
+            Apiws: apiws,
+            MsgBot: bot,
+        }
+        maxtri.StartMaxTri(backend)
     }()
 
     for {
