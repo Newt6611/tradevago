@@ -75,13 +75,13 @@ func StartMaxTri(backend *tri.Backend) {
 			maxAmount := balanceHandler.Get(cycles.MAX).Balance
 			if maxAmount < 5 {
 				// notifyHandler.SendMsg(fmt.Sprintf("MAX幣少於 5, 請趕快補充 %f", maxAmount))
-				notifyHandler.SendMsg(fmt.Sprintf("開始購買 Max 幣"))
+				notifyHandler.SendMsg(fmt.Sprintf("=========開始購買 Max 幣========="))
                 err := buyMaxFee(ctx, backend.Api, userOrderhandler, notifyHandler)
                 if err != nil {
                     notifyHandler.SendMsg(err.Error())
                     continue
                 }
-                notifyHandler.SendMsg(fmt.Sprintf("購買完畢"))
+                notifyHandler.SendMsg(fmt.Sprintf("=========購買完畢========="))
 			}
 
 			startTime := time.Now()

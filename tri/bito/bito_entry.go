@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Newt6611/tradevago/pkg/api"
-	"github.com/Newt6611/tradevago/pkg/notify"
 	"github.com/Newt6611/tradevago/tri"
 	"github.com/Newt6611/tradevago/tri/bito/cycles"
 )
@@ -16,15 +14,15 @@ const (
     PairStartTradeTimes int = 10
 )
 
-func StartBitoTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
+func StartBitoTri(backend *tri.Backend) {
     ctx := context.Background()
 
     //------------- init -------------//
-    notifyHandler := tri.NewNotifyHandler(msgBot)
+    notifyHandler := tri.NewNotifyHandler(backend.MsgBot)
     go notifyHandler.Handle(ctx)
     defer notifyHandler.Stop()
 
-    depthHandler := tri.NewDepthHandler(apiws, notifyHandler)
+    depthHandler := tri.NewDepthHandler(backend.Apiws, notifyHandler)
 
     // ws pairs should be BTC_TWD
     pairs := cycles.GetPairs()
@@ -36,22 +34,22 @@ func StartBitoTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
 
     time.Sleep(time.Millisecond * 100)
 
-    balanceHandler := tri.NewBalanceHandler(apiws, notifyHandler)
+    balanceHandler := tri.NewBalanceHandler(backend.Apiws, notifyHandler)
     go balanceHandler.Handle(ctx, setBalanceData)
     defer balanceHandler.Stop()
 
     time.Sleep(time.Millisecond * 100)
 
-    userOrderhandler := tri.NewUserOrderHandler(apiws, notifyHandler)
+    userOrderhandler := tri.NewUserOrderHandler(backend.Apiws, notifyHandler)
     go userOrderhandler.Handle(ctx, setUserOrderData)
     defer userOrderhandler.Stop()
 
     time.Sleep(time.Millisecond * 100)
 
-    pairInfoHandler := tri.NewTradingPairInfoHandler(api)
+    pairInfoHandler := tri.NewTradingPairInfoHandler(backend.Api)
     go pairInfoHandler.Handle(ctx, convertPairName)
 
-    tradeEngine := tri.NewTradeEngine(api, depthHandler, pairInfoHandler, balanceHandler, notifyHandler, userOrderhandler)
+    tradeEngine := tri.NewTradeEngine(backend.Api, depthHandler, pairInfoHandler, balanceHandler, notifyHandler, userOrderhandler)
     isTrading := false
     go notifyHandler.HandleMessage(notifierCmds(balanceHandler, depthHandler))
 
@@ -85,7 +83,7 @@ func StartBitoTri(api *api.Api, apiws *api.WSApi, msgBot notify.Notifier) {
             }
 
             startTime := time.Now()
-            rate, maxOrderAmount := tri.CycleHandler(api, depthHandler, cycle)
+            rate, maxOrderAmount := tri.CycleHandler(backend.Api, depthHandler, cycle)
             if rate > 1.001 {
                 _, do := tradeSignal.StartTradeOrNot(cycle.GetName());
                 if !do {

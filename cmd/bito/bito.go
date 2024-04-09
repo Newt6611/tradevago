@@ -9,6 +9,7 @@ import (
 	"github.com/Newt6611/tradevago/pkg/api"
 	b "github.com/Newt6611/tradevago/pkg/api/bito"
 	"github.com/Newt6611/tradevago/pkg/notify/telegram"
+	"github.com/Newt6611/tradevago/tri"
 	bitotri "github.com/Newt6611/tradevago/tri/bito"
 	"github.com/spf13/viper"
 )
@@ -36,7 +37,13 @@ func EntryPoint() {
         apiClient := api.NewApi(client)
         wsclient := b.NewBitoWs(apiKey, apiSecret, email)
         apiws := api.NewWsApi(wsclient)
-        bitotri.StartBitoTri(apiClient, apiws, bot)
+
+        backend := &tri.Backend {
+            Api: apiClient,
+            Apiws: apiws,
+            MsgBot: bot,
+        }
+        bitotri.StartBitoTri(backend)
     }()
 
     for {
