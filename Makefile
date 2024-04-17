@@ -12,6 +12,5 @@ maxbuild:
 bito:
 	go run cmd/bito/main.go
 
-
 db:
 	docker build -t newt6611/tri .
