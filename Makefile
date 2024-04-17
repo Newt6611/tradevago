@@ -15,15 +15,3 @@ bito:
 
 db:
 	docker build -t newt6611/tri .
-
-
-
-
-
-
-main
-main
-main
-test
-test
-test
